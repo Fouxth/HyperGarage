@@ -32,6 +32,7 @@ const WishlistPage = lazy(() => import('@/pages/customer/WishlistPage'))
 const AccountPage = lazy(() => import('@/pages/customer/AccountPage'))
 const PromotionsPage = lazy(() => import('@/pages/customer/PromotionsPage'))
 const BlogPage = lazy(() => import('@/pages/customer/BlogPage'))
+const LegalPage = lazy(() => import('@/pages/customer/LegalPage'))
 const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'))
 const AdminProductsPage = lazy(() => import('@/pages/admin/ProductsPage'))
 const AdminCategoriesPage = lazy(() => import('@/pages/admin/CategoriesPage'))
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="account" element={<AccountPage />} />
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="blog" element={<BlogPage />} />
+          <Route path="legal/:type" element={<LegalPage />} />
         </Route>
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />
