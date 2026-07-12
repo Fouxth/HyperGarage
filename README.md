@@ -1,139 +1,97 @@
-# HyperGarage
+# HyperGarage (ไฮเปอร์การาจ)
 
-ระบบ E-Commerce สำหรับขายอะไหล่แต่งรถยนต์ระดับพรีเมียม พัฒนาด้วย React + TypeScript + Tailwind CSS
-
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+> **แพลตฟอร์มอีคอมเมิร์ซสำหรับจำหน่ายอะไหล่แต่งเครื่องยนต์สายซิ่ง/แดร็กสไตล์ไทย พร้อมระบบตรวจสอบความเข้ากันได้ของอะไหล่กับรถยนต์**
+> (HyperGarage: Full-Stack E-Commerce Platform for Thai Racing/Drag Engine Parts with Vehicle Compatibility Checker)
 
 ---
 
-## Overview
+## 📋 ภาพรวมโครงการ (Project Overview)
 
-HyperGarage เป็นแพลตฟอร์ม E-Commerce สำหรับจำหน่ายอะไหล่แต่งรถยนต์สมรรถนะสูง ออกแบบ UI/UX ในสไตล์พรีเมียม Dark Theme ที่ได้แรงบันดาลใจจาก Tesla, Porsche, Apple และ Stripe รองรับทั้งภาษาไทยและภาษาอังกฤษ
+โครงการ **HyperGarage** พัฒนาขึ้นเพื่อแก้ไขปัญหาของผู้ใช้ในวงการแต่งรถที่ไม่แน่ใจว่าอะไหล่ชิ้นใดใช้ได้กับรถยนต์ยี่ห้อ/รุ่น/เครื่องยนต์ของตนบ้าง (Vehicle Compatibility) และความยุ่งยากในการค้นหา เปรียบเทียบ และสั่งซื้ออะไหล่แต่งเครื่องยนต์จากหลายแบรนด์ในที่เดียว โครงงานนี้สร้างระบบตรวจสอบความเข้ากันได้ (Compatibility Checker) พร้อมกับฟังก์ชันอีคอมเมิร์ซครบวงจร (ตะกร้า สั่งซื้อแบบ Guest Checkout รีวิวสินค้า) และระบบจัดการหลังบ้านสำหรับผู้ดูแลร้าน (จัดการสินค้า คำสั่งซื้อ สต็อก คูปอง และรายงานสรุปที่คำนวณจากข้อมูลจริงในฐานข้อมูล) โดยเชื่อมต่อฐานข้อมูล PostgreSQL จริงตลอดทั้งระบบ ไม่มีข้อมูลจำลอง (mock data) หลงเหลืออยู่
 
-## Features
+### 🔗 เอกสารโครงการ (Project Documentation Links)
 
-### Customer Website
-- **Homepage** - Hero Banner, Compatibility Checker, Categories, Featured Products, Flash Sale พร้อม Countdown, Top Brands, Newsletter
-- **Product Detail** - Gallery, Specifications, Compatibility Table, Reviews, Q&A, Related Products
-- **Compatibility Checker** - เลือกยี่ห้อรถ > รุ่น > เจเนอเรชัน > ปี > เครื่องยนต์ เพื่อค้นหาอะไหล่ที่เข้ากันได้
-- **i18n** - รองรับภาษาไทยและอังกฤษ สลับได้ทันที
+* **Repository URL:** `https://github.com/Fouxth/HyperGarage`
+* **เอกสารข้อกำหนดระบบเชิงลึก (SRS Markdown):** [public/SRS.md](./public/SRS.md)
+* **หน้าแสดงเอกสาร SRS (Live Document):** `/srs.html` — เปิดผ่านแอปหลังรันเซิร์ฟเวอร์ (เช่น `http://localhost:5173/srs.html`) ไม่ได้โฮสต์แยกผ่าน GitHub Pages เนื่องจากโปรเจกต์นี้ต้องมีฐานข้อมูล/แบ็กเอนด์จริงทำงานอยู่เบื้องหลัง ไม่ใช่เอกสารสถิตล้วนแบบ ComHub
 
-### Admin Dashboard
-- **Dashboard** - Revenue, Orders, Visitors, Customers พร้อมกราฟแนวโน้ม
-- **Sales Overview** - Area Chart แสดงยอดขายรายเดือน
-- **Category Sales** - Donut Chart แสดงสัดส่วนยอดขายตามหมวดหมู่
-- **Product Management** - ตารางจัดการสินค้า พร้อม Search และ Filter
-- **Order Management** - ตารางคำสั่งซื้อ พร้อม Status Filter
-- **Low Stock Alert** - แจ้งเตือนสินค้าใกล้หมด
-- **Latest Reviews & Notifications** - รีวิวล่าสุดและการแจ้งเตือน
+---
 
-## Tech Stack
+## 🛠️ โครงสร้างของโครงการ (Project Structure)
 
-| Technology | Purpose |
-|---|---|
-| React 18 | UI Framework |
-| TypeScript | Type Safety |
-| Vite 6 | Build Tool & Dev Server |
-| Tailwind CSS 4 | Utility-first CSS |
-| React Router 7 | Client-side Routing |
-| Recharts | Charts & Data Visualization |
-| Framer Motion | Animations |
-| Lucide React | Icon Library |
-| i18next | Internationalization (TH/EN) |
-
-## Design System
-
-| Token | Value |
-|---|---|
-| Primary | `#D6001C` |
-| Background | `#0B0B0B` |
-| Card | `#161616` |
-| Border | `#2B2B2B` |
-| Text | `#FFFFFF` |
-| Muted | `#888888` |
-| Font | Inter |
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── layout/          # Header, Footer, AdminSidebar, AdminHeader
-│   └── ui/              # Button, Badge, Card, Select
-├── pages/
-│   ├── customer/        # HomePage, ProductPage
-│   └── admin/           # DashboardPage
-├── data/                # Mock data (products, categories, brands, vehicles)
-├── i18n/                # Translations (en.ts, th.ts)
-├── types/               # TypeScript interfaces
-├── hooks/               # Custom hooks
-└── lib/                 # Utilities
+```plaintext
+HyperGarage/
+├── .gitignore               # ไฟล์สำหรับระบุสิ่งที่ Git จะไม่นำไปติดตาม (เช่น node_modules, .env)
+├── README.md                # ไฟล์นี้ (ภาพรวมโครงการและลิงก์เอกสาร)
+├── index.html               # HTML entry point ของ React SPA (Vite)
+├── src/                      # โค้ด Frontend (React + TypeScript)
+│   ├── api/                  # API client (fetch wrapper) + React Query hooks
+│   ├── components/           # Header, Footer, Layout, ProductCard และ component ที่ใช้ร่วมกัน
+│   ├── context/               # CartContext, WishlistContext (เก็บสถานะใน localStorage)
+│   ├── pages/
+│   │   ├── customer/          # หน้าฝั่งลูกค้า (11 หน้า)
+│   │   └── admin/              # หน้าฝั่งแอดมิน (18 หน้า)
+│   ├── i18n/                  # ไฟล์แปลภาษา (th.ts, en.ts)
+│   └── types/                  # TypeScript interfaces
+├── server/                    # โค้ด Backend (Node.js + Express + TypeScript)
+│   ├── src/
+│   │   ├── routes/             # products, categories, brands, vehicles, orders, reviews, coupons, settings, stats
+│   │   └── index.ts             # จุดเริ่มต้นของ Express server
+│   └── prisma/
+│       ├── schema.prisma        # Schema ฐานข้อมูล PostgreSQL (Product, Order, Review, VehicleBrand ฯลฯ)
+│       └── seed-data.ts          # ข้อมูลตั้งต้นสำหรับ seed เข้าฐานข้อมูลจริง
+└── public/
+    ├── SRS.md                  # เอกสารวิเคราะห์และออกแบบระบบ (System Requirement Specification)
+    └── srs.html                 # หน้าแสดงเอกสาร SRS แบบ Interactive (เรนเดอร์ SRS.md ด้วย marked.js + mermaid.js)
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## 🚀 เครื่องมือและเทคโนโลยีหลัก (Technologies)
 
-- Node.js 20.19+ หรือ 22.12+
-- npm
+* **Frontend:** React 19 + TypeScript, Vite 6, Tailwind CSS 4, React Router 7, TanStack Query (React Query), Framer Motion, i18next
+* **Backend:** Node.js + Express (TypeScript)
+* **Database:** PostgreSQL จริง (คลาวด์) เชื่อมต่อผ่าน Prisma ORM — ไม่มีการจำลองข้อมูลด้วย LocalStorage/JSON ฝั่งแบ็กเอนด์
+* **Documentation Tools:** Markdown, HTML5, `marked.js` (Markdown Parser), `mermaid.js` (Diagram Drawing)
 
-### Installation
+---
+
+## ⚙️ การติดตั้งและใช้งาน (Getting Started)
 
 ```bash
 git clone https://github.com/Fouxth/HyperGarage.git
 cd HyperGarage
+
+# ติดตั้ง frontend
+npm install
+
+# ติดตั้ง backend
+cd server
 npm install
 ```
 
-### Development
+ตั้งค่าฐานข้อมูลโดยสร้างไฟล์ `server/.env` (ไม่ commit เข้า git):
+
+```
+DATABASE_URL="postgresql://user:password@host:5432/dbname"
+PORT=4000
+```
+
+รัน migration และ seed ข้อมูลตั้งต้น แล้วเปิด 2 terminal เพื่อรันทั้งสองฝั่ง:
 
 ```bash
+# Terminal 1 — Backend API (http://localhost:4000)
+cd server
+npx prisma migrate dev
+npm run prisma:seed
+npm run dev
+
+# Terminal 2 — Frontend (http://localhost:5173)
 npm run dev
 ```
 
-เปิดเบราว์เซอร์ที่ `http://localhost:5173`
+---
 
-### Routes
+## 🧑‍💻 สมาชิกทีมผู้พัฒนา
 
-| Path | Page |
-|---|---|
-| `/` | Customer Homepage |
-| `/product/:slug` | Product Detail |
-| `/admin` | Admin Dashboard |
-
-### Build
-
-```bash
-npm run build
-```
-
-## Screenshots
-
-### Customer Homepage
-- Hero Banner พร้อม Gradient Background
-- Compatibility Checker (ค้นหาอะไหล่ตามรุ่นรถ)
-- Categories Grid, Featured Products, Flash Sale
-
-### Admin Dashboard
-- Stats Cards พร้อม Trend Indicators
-- Sales Overview Chart & Category Donut Chart
-- Product Management Table & Order Management
-
-## Compatibility Database
-
-รองรับข้อมูลรถยนต์:
-
-| Brand | Models |
-|---|---|
-| Honda | Civic (FD, FB, FC, FK8, FL5), Jazz (GE, GK), Accord (G8, G9, G10) |
-| Toyota | 86 (ZN6, ZN8), Supra (A90), GR Yaris |
-| Subaru | WRX STI (VAB), BRZ (ZC6, ZD8) |
-| Nissan | 370Z (Z34), GT-R (R35) |
-| Mazda | MX-5 (ND), Mazda 3 (BP) |
-
-## License
-
-MIT
+* `65007912 นายภัทรพิสิฏ ทองเกิด`

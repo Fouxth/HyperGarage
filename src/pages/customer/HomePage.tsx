@@ -7,22 +7,19 @@ import {
   Truck,
   RefreshCcw,
   Banknote,
-  Heart,
-  ShoppingCart,
-  Star,
   Search,
   ChevronRight,
   Zap,
   ArrowRight,
   Send,
 } from 'lucide-react'
-import { products, categories, brands, vehicles } from '@/data'
+import { useCategories, useBrands, useVehicles, useProducts } from '@/api/hooks'
+import ProductCard from '@/components/shared/ProductCard'
+import { localizedName } from '@/lib/localize'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const formatPrice = (price: number) => `฿${price.toLocaleString()}`
 
 const useCountdown = (targetDate: Date) => {
   const calc = () => {
@@ -179,6 +176,7 @@ const HeroBanner = () => {
 
 const CompatibilityChecker = () => {
   const { t } = useTranslation()
+  const { data: vehicles = [] } = useVehicles()
 
   const [selectedBrand, setSelectedBrand] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
@@ -347,7 +345,7 @@ const CompatibilityChecker = () => {
           {/* Search */}
           <div className="flex items-end">
             <Link
-              to={`/products${selectedBrand ? `?brand=${selectedBrand}` : ''}${selectedModel ? `&model=${selectedModel}` : ''}${selectedGen ? `&gen=${selectedGen}` : ''}${selectedEngine ? `&engine=${selectedEngine}` : ''}`}
+              to={`/products${selectedBrand ? `?vehicleBrand=${encodeURIComponent(selectedBrand)}` : ''}${selectedModel ? `&vehicleModel=${encodeURIComponent(selectedModel)}` : ''}${selectedGen ? `&vehicleGeneration=${encodeURIComponent(selectedGen)}` : ''}${selectedEngine ? `&vehicleEngine=${encodeURIComponent(selectedEngine)}` : ''}`}
               className="gradient-primary flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
             >
               <Search className="h-4 w-4" />
@@ -400,7 +398,8 @@ const GuaranteeBar = () => {
 // ---------------------------------------------------------------------------
 
 const CategoriesGrid = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { data: categories = [] } = useCategories()
 
   return (
     <Section className="py-16">
@@ -413,13 +412,13 @@ const CategoriesGrid = () => {
         {categories.slice(0, 8).map((cat) => (
           <Link
             key={cat.id}
-            to={`/category/${cat.slug}`}
+            to={`/products?category=${cat.slug}`}
             className="hover-lift group relative block aspect-[4/3] overflow-hidden rounded-xl border border-border"
           >
             {cat.image ? (
               <img
                 src={cat.image}
-                alt={cat.nameEn}
+                alt={localizedName(cat, i18n.language)}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
@@ -427,7 +426,7 @@ const CategoriesGrid = () => {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent transition-all duration-300 group-hover:from-black/90" />
             <div className="absolute inset-x-0 bottom-0 p-4">
-              <h3 className="font-semibold text-white leading-tight">{cat.nameEn}</h3>
+              <h3 className="font-semibold text-white leading-tight">{localizedName(cat, i18n.language)}</h3>
               <p className="mt-0.5 text-xs text-white/55">{cat.productCount} products</p>
             </div>
           </Link>
@@ -441,90 +440,9 @@ const CategoriesGrid = () => {
 // 5. Featured Products
 // ---------------------------------------------------------------------------
 
-const ProductCard = ({
-  product,
-}: {
-  product: (typeof products)[number]
-}) => {
-  const { t } = useTranslation()
-  const [wishlisted, setWishlisted] = useState(false)
-
-  return (
-    <div className="hover-lift group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-border-light">
-      {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-card to-bg-elevated">
-        {product.images[0] ? (
-          <img
-            src={product.images[0]}
-            alt={product.nameEn}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-white/10">
-            {product.brand}
-          </div>
-        )}
-
-        {product.discount && (
-          <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
-            -{product.discount}%
-          </span>
-        )}
-
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setWishlisted(!wishlisted)
-          }}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-        >
-          <Heart
-            className={`h-4 w-4 ${wishlisted ? 'fill-primary text-primary' : ''}`}
-          />
-        </button>
-      </div>
-
-      {/* Info */}
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted">
-          {product.brand}
-        </p>
-        <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">
-          {product.nameEn}
-        </h3>
-
-        {/* Rating */}
-        <div className="mt-2 flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-          <span className="text-xs font-medium">{product.rating}</span>
-          <span className="text-xs text-muted">({product.reviewCount})</span>
-        </div>
-
-        {/* Price */}
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-primary">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && (
-            <span className="text-sm text-muted line-through">
-              {formatPrice(product.originalPrice)}
-            </span>
-          )}
-        </div>
-
-        {/* Add to Cart */}
-        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-white/5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary hover:text-white">
-          <ShoppingCart className="h-4 w-4" />
-          {t('product.addToCart')}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 const FeaturedProducts = () => {
   const { t } = useTranslation()
-  const featured = products.filter((p) => p.isFeatured)
+  const { data: featured = [] } = useProducts({ featured: true })
 
   return (
     <Section className="py-16">
@@ -550,7 +468,7 @@ const FeaturedProducts = () => {
 
 const FlashSale = () => {
   const { t } = useTranslation()
-  const flashProducts = products.filter((p) => p.isFlashSale)
+  const { data: flashProducts = [] } = useProducts({ flashSale: true })
 
   // countdown to a future date (7 days from now, keeps ticking)
   const target = useMemo(() => {
@@ -616,6 +534,7 @@ const FlashSale = () => {
 // ---------------------------------------------------------------------------
 
 const countryFlags: Record<string, string> = {
+  Thailand: '🇹🇭',
   Japan: '🇯🇵',
   Italy: '🇮🇹',
   USA: '🇺🇸',
@@ -627,6 +546,7 @@ const countryFlags: Record<string, string> = {
 
 const TopBrands = () => {
   const { t } = useTranslation()
+  const { data: brands = [] } = useBrands()
 
   return (
     <Section className="py-16">
@@ -639,7 +559,7 @@ const TopBrands = () => {
         {brands.map((brand) => (
           <Link
             key={brand.id}
-            to={`/brand/${brand.slug}`}
+            to={`/products?brand=${brand.slug}`}
             className="hover-lift group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
           >
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[11px] font-extrabold tracking-wider text-white transition-colors group-hover:bg-primary/10 group-hover:text-primary">

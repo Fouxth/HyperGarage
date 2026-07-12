@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import {
   DollarSign,
   ShoppingCart,
-  Eye,
   Users,
-  TrendingUp,
-  TrendingDown,
   Search,
   Plus,
   Edit3,
@@ -18,9 +15,7 @@ import {
   Star,
   Bell,
   Package,
-  CheckCircle,
   Clock,
-  Truck,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -35,10 +30,10 @@ import {
   Cell,
   Legend,
 } from 'recharts'
-import { adminStats, salesData, categorySales, orders, products } from '@/data'
+import { useProducts, useOrders, useDashboardStats, useRecentReviews } from '@/api/hooks'
 import type { Order } from '@/types'
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -46,57 +41,10 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
-
-const statCards = [
-  {
-    key: 'revenue',
-    icon: DollarSign,
-    value: `฿${adminStats.revenue.toLocaleString()}`,
-    labelKey: 'admin.revenue',
-    fallback: 'Total Revenue',
-    change: adminStats.revenueChange,
-    accent: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10',
-    valueCls: 'text-white',
-  },
-  {
-    key: 'orders',
-    icon: ShoppingCart,
-    value: adminStats.orders.toLocaleString(),
-    labelKey: 'admin.orders',
-    fallback: 'Total Orders',
-    change: adminStats.ordersChange,
-    accent: 'text-blue-400',
-    iconBg: 'bg-blue-500/10',
-    valueCls: 'text-white',
-  },
-  {
-    key: 'visitors',
-    icon: Eye,
-    value: adminStats.visitors.toLocaleString(),
-    labelKey: 'admin.visitors',
-    fallback: 'Site Visitors',
-    change: adminStats.visitorsChange,
-    accent: 'text-violet-400',
-    iconBg: 'bg-violet-500/10',
-    valueCls: 'text-white',
-  },
-  {
-    key: 'customers',
-    icon: Users,
-    value: adminStats.customers.toLocaleString(),
-    labelKey: 'admin.customers',
-    fallback: 'Customers',
-    change: adminStats.customersChange,
-    accent: 'text-amber-400',
-    iconBg: 'bg-amber-500/10',
-    valueCls: 'text-white',
-  },
-]
 
 const orderStatusFilters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered'] as const
 
@@ -113,19 +61,6 @@ const paymentStatusColors: Record<Order['paymentStatus'], string> = {
   paid: 'bg-success/15 text-success',
   refunded: 'bg-error/15 text-error',
 }
-
-const mockReviews = [
-  { id: 1, user: 'สมชาย', rating: 5, comment: 'สินค้าคุณภาพดีมาก ส่งไว แนะนำครับ', date: '2 hours ago' },
-  { id: 2, user: 'วิภาวดี', rating: 4, comment: 'ติดตั้งง่าย เสียงดีมาก คุ้มค่า', date: '5 hours ago' },
-  { id: 3, user: 'ธนพล', rating: 5, comment: 'ของแท้ 100% บริการดีเยี่ยม', date: '1 day ago' },
-]
-
-const mockNotifications = [
-  { id: 1, icon: Package, text: 'New order #HG20240S21002 received', time: '5 min ago', type: 'info' as const },
-  { id: 2, icon: AlertTriangle, text: 'HKS Super Power Flow stock is low (5 left)', time: '1 hour ago', type: 'warning' as const },
-  { id: 3, icon: CheckCircle, text: 'Order #HG20240S10098 delivered successfully', time: '3 hours ago', type: 'success' as const },
-  { id: 4, icon: Users, text: '12 new customers registered today', time: '6 hours ago', type: 'info' as const },
-]
 
 const categoryColors: Record<string, string> = {
   'exhaust': '#EF4444',
@@ -164,6 +99,50 @@ export default function DashboardPage() {
   const [orderFilter, setOrderFilter] = useState<string>('All')
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('1Y')
 
+  const { data: products = [] } = useProducts()
+  const { data: orders = [] } = useOrders()
+  const { data: dashboardStats } = useDashboardStats()
+  const { data: recentReviews = [] } = useRecentReviews(3)
+
+  const statCards = [
+    {
+      key: 'revenue',
+      icon: DollarSign,
+      value: `฿${(dashboardStats?.stats.revenue ?? 0).toLocaleString()}`,
+      labelKey: 'admin.revenue',
+      fallback: 'Total Revenue',
+      accent: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+    },
+    {
+      key: 'orders',
+      icon: ShoppingCart,
+      value: (dashboardStats?.stats.orders ?? 0).toLocaleString(),
+      labelKey: 'admin.orders',
+      fallback: 'Total Orders',
+      accent: 'text-blue-400',
+      iconBg: 'bg-blue-500/10',
+    },
+    {
+      key: 'totalProducts',
+      icon: Package,
+      value: (dashboardStats?.stats.totalProducts ?? 0).toLocaleString(),
+      labelKey: 'admin.totalProducts',
+      fallback: 'Total Products',
+      accent: 'text-violet-400',
+      iconBg: 'bg-violet-500/10',
+    },
+    {
+      key: 'customers',
+      icon: Users,
+      value: (dashboardStats?.stats.customers ?? 0).toLocaleString(),
+      labelKey: 'admin.customers',
+      fallback: 'Customers',
+      accent: 'text-amber-400',
+      iconBg: 'bg-amber-500/10',
+    },
+  ]
+
   const displayProducts = products.slice(0, 5).filter((p) =>
     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
     p.nameEn.toLowerCase().includes(productSearch.toLowerCase())
@@ -174,6 +153,21 @@ export default function DashboardPage() {
     : orders.filter((o) => o.status === orderFilter.toLowerCase())
 
   const lowStockProducts = products.filter((p) => p.stock < 10)
+
+  const notifications = [
+    ...orders.slice(0, 1).map((o) => ({
+      icon: Package,
+      text: `Latest order ${o.orderNumber} — ${o.status}`,
+      time: new Date(o.createdAt).toLocaleDateString(),
+      type: 'info' as const,
+    })),
+    ...lowStockProducts.slice(0, 2).map((p) => ({
+      icon: AlertTriangle,
+      text: `${p.nameEn} stock is low (${p.stock} left)`,
+      time: '',
+      type: 'warning' as const,
+    })),
+  ]
 
   const today = new Date().toLocaleDateString('th-TH', {
     year: 'numeric',
@@ -205,7 +199,6 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => {
           const Icon = stat.icon
-          const isPositive = stat.change >= 0
           return (
             <motion.div
               key={stat.key}
@@ -216,10 +209,6 @@ export default function DashboardPage() {
                 <div className={`p-2.5 rounded-lg ${stat.iconBg}`}>
                   <Icon className={`w-5 h-5 ${stat.accent}`} />
                 </div>
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                  {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {isPositive ? '+' : ''}{stat.change}%
-                </span>
               </div>
               <p className="text-2xl font-bold text-white mb-1 tracking-tight">{stat.value}</p>
               <p className="text-sm text-muted">{t(stat.labelKey, stat.fallback)}</p>
@@ -253,7 +242,7 @@ export default function DashboardPage() {
           </div>
           <div className="h-72 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={dashboardStats?.salesByMonth ?? []} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#D6001C" stopOpacity={0.3} />
@@ -300,7 +289,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={categorySales}
+                  data={dashboardStats?.categorySales ?? []}
                   cx="50%"
                   cy="45%"
                   innerRadius={60}
@@ -309,7 +298,7 @@ export default function DashboardPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {categorySales.map((entry, index) => (
+                  {(dashboardStats?.categorySales ?? []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -328,7 +317,7 @@ export default function DashboardPage() {
                     color: '#fff',
                     fontSize: '12px',
                   }}
-                  formatter={(value: number) => [`${value}%`, 'Share']}
+                  formatter={(value) => [`${value}%`, 'Share']}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -566,14 +555,14 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="space-y-3">
-            {mockReviews.map((review) => (
+            {recentReviews.map((review) => (
               <div
                 key={review.id}
                 className="p-3 rounded-lg bg-bg border border-border/50"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-sm font-medium">{review.user}</span>
-                  <span className="text-muted text-xs">{review.date}</span>
+                  <span className="text-white text-sm font-medium">{review.userName}</span>
+                  <span className="text-muted text-xs">{new Date(review.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-0.5 mb-2">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -586,6 +575,9 @@ export default function DashboardPage() {
                 <p className="text-muted-light text-xs leading-relaxed">{review.comment}</p>
               </div>
             ))}
+            {recentReviews.length === 0 && (
+              <p className="text-muted text-sm text-center py-4">No reviews yet</p>
+            )}
           </div>
         </motion.div>
 
@@ -601,13 +593,13 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="space-y-3">
-            {mockNotifications.map((notif) => {
+            {notifications.map((notif, i) => {
               const NotifIcon = notif.icon
-              const iconColor = notif.type === 'warning' ? 'text-warning' : notif.type === 'success' ? 'text-success' : 'text-info'
-              const bgColor = notif.type === 'warning' ? 'bg-warning/10' : notif.type === 'success' ? 'bg-success/10' : 'bg-info/10'
+              const iconColor = notif.type === 'warning' ? 'text-warning' : 'text-info'
+              const bgColor = notif.type === 'warning' ? 'bg-warning/10' : 'bg-info/10'
               return (
                 <div
-                  key={notif.id}
+                  key={i}
                   className="flex items-start gap-3 p-3 rounded-lg bg-bg border border-border/50 hover:border-border transition-colors"
                 >
                   <div className={`p-1.5 rounded-md ${bgColor} shrink-0 mt-0.5`}>
@@ -615,11 +607,14 @@ export default function DashboardPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-muted-light text-xs leading-relaxed">{notif.text}</p>
-                    <p className="text-muted text-xs mt-1">{notif.time}</p>
+                    {notif.time && <p className="text-muted text-xs mt-1">{notif.time}</p>}
                   </div>
                 </div>
               )
             })}
+            {notifications.length === 0 && (
+              <p className="text-muted text-sm text-center py-4">No notifications yet</p>
+            )}
           </div>
         </motion.div>
       </div>

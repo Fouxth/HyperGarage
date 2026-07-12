@@ -11,6 +11,13 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+server/.env
+server/node_modules
+server/dist
+server/*.tsbuildinfo
+server/prisma/*.js
 
 # Editor directories and files
 .vscode/*

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
@@ -13,80 +13,20 @@ import {
   Package,
   Shield,
   Truck,
-  ThumbsUp,
-  MessageSquare,
   ArrowLeft,
 } from 'lucide-react'
-import { products } from '@/data'
+import { useProduct, useProducts, useProductReviews, useCreateReview } from '@/api/hooks'
+import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 import type { Product } from '@/types'
 
-// --- Mock reviews ---
-const mockReviews = [
-  {
-    id: '1',
-    userName: 'Alex R.',
-    rating: 5,
-    date: '2024-04-15',
-    comment:
-      'Excellent quality. Fitment was perfect and the performance improvement is immediately noticeable. Highly recommended for anyone serious about their build.',
-  },
-  {
-    id: '2',
-    userName: 'Somchai T.',
-    rating: 4,
-    date: '2024-03-22',
-    comment:
-      'Great product overall. Installation was straightforward with basic tools. Took off one star because the instructions could be more detailed.',
-  },
-  {
-    id: '3',
-    userName: 'Mike W.',
-    rating: 5,
-    date: '2024-02-10',
-    comment:
-      'This is my second purchase from this brand and the quality is consistently top-notch. The finish and build quality exceed expectations at this price point.',
-  },
-]
-
-const mockQA = [
-  {
-    id: '1',
-    question: 'Does this fit the 2019 model without any modifications?',
-    asker: 'John D.',
-    date: '2024-04-01',
-    answer:
-      'Yes, this is a direct bolt-on fitment for the 2019 model. No modifications or additional brackets are required.',
-    answeredBy: 'HyperGarage Team',
-    answerDate: '2024-04-02',
-  },
-  {
-    id: '2',
-    question: 'What is the warranty coverage for this product?',
-    asker: 'Sarah K.',
-    date: '2024-03-15',
-    answer:
-      'This product comes with a 1-year manufacturer warranty covering defects in materials and workmanship. Normal wear and tear is not covered.',
-    answeredBy: 'HyperGarage Team',
-    answerDate: '2024-03-16',
-  },
-]
-
-const ratingBreakdown = [
-  { stars: 5, percent: 72 },
-  { stars: 4, percent: 18 },
-  { stars: 3, percent: 7 },
-  { stars: 2, percent: 2 },
-  { stars: 1, percent: 1 },
-]
-
 // --- Tabs ---
-type TabKey = 'specs' | 'compatibility' | 'reviews' | 'qa'
+type TabKey = 'specs' | 'compatibility' | 'reviews'
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'specs', label: 'Specifications' },
   { key: 'compatibility', label: 'Compatibility' },
   { key: 'reviews', label: 'Reviews' },
-  { key: 'qa', label: 'Q&A' },
 ]
 
 // --- Stars component ---
@@ -185,12 +125,31 @@ export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>()
   const { t } = useTranslation()
 
-  const product = products.find((p) => p.slug === slug)
+  const { data: product, isLoading } = useProduct(slug)
+  const { data: sameCategoryProducts = [] } = useProducts(
+    { category: product?.categorySlug },
+    { enabled: !!product },
+  )
+  const { data: reviews = [] } = useProductReviews(product?.id)
 
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState<TabKey>('specs')
   const [selectedImage, setSelectedImage] = useState(0)
-  const [wishlisted, setWishlisted] = useState(false)
+  const [reviewForm, setReviewForm] = useState({ userName: '', rating: 5, comment: '' })
+  const createReview = useCreateReview()
+  const navigate = useNavigate()
+  const { addItem } = useCart()
+  const { has, toggle } = useWishlist()
+  const wishlisted = product ? has(product.id) : false
+
+  // --- Loading ---
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
 
   // --- Not found ---
   if (!product) {
@@ -221,10 +180,8 @@ export default function ProductPage() {
   }
 
   // --- Derived ---
-  const relatedProducts = products
-    .filter(
-      (p) => p.categorySlug === product.categorySlug && p.id !== product.id,
-    )
+  const relatedProducts = sameCategoryProducts
+    .filter((p) => p.id !== product.id)
     .slice(0, 4)
 
   const thumbnailImages =
@@ -255,7 +212,7 @@ export default function ProductPage() {
           </Link>
           <ChevronRight size={14} />
           <Link
-            to={`/category/${product.categorySlug}`}
+            to={`/products?category=${product.categorySlug}`}
             className="transition-colors hover:text-white"
           >
             {product.category}
@@ -405,6 +362,7 @@ export default function ProductPage() {
             <div className="flex flex-col gap-3">
               <button
                 disabled={product.stock === 0}
+                onClick={() => addItem(product, quantity)}
                 className="gradient-primary flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 <ShoppingCart size={20} />
@@ -414,13 +372,17 @@ export default function ProductPage() {
               <div className="flex gap-3">
                 <button
                   disabled={product.stock === 0}
+                  onClick={() => {
+                    addItem(product, quantity)
+                    navigate('/cart')
+                  }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/5 disabled:opacity-40"
                 >
                   <Zap size={16} />
                   {t('product.buyNow', 'Buy Now')}
                 </button>
                 <button
-                  onClick={() => setWishlisted((v) => !v)}
+                  onClick={() => toggle(product.id)}
                   className={`flex items-center justify-center rounded-xl border px-4 py-3 transition-colors ${
                     wishlisted
                       ? 'border-primary/40 bg-primary/10 text-primary'
@@ -443,7 +405,7 @@ export default function ProductPage() {
                   {t('product.category', 'Category')}:
                 </span>{' '}
                 <Link
-                  to={`/category/${product.categorySlug}`}
+                  to={`/products?category=${product.categorySlug}`}
                   className="text-white hover:text-primary"
                 >
                   {product.category}
@@ -631,109 +593,131 @@ export default function ProductPage() {
 
                   {/* Breakdown */}
                   <div className="flex flex-col justify-center gap-2.5">
-                    {ratingBreakdown.map((row) => (
-                      <div
-                        key={row.stars}
-                        className="flex items-center gap-3"
-                      >
-                        <span className="w-8 text-right text-sm text-muted-light">
-                          {row.stars}
-                          <Star
-                            size={11}
-                            className="mb-0.5 ml-0.5 inline fill-yellow-400 text-yellow-400"
-                          />
-                        </span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-border">
-                          <div
-                            className="h-full rounded-full bg-yellow-400"
-                            style={{ width: `${row.percent}%` }}
-                          />
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = reviews.filter((r) => r.rating === stars).length
+                      const percent = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0
+                      return (
+                        <div key={stars} className="flex items-center gap-3">
+                          <span className="w-8 text-right text-sm text-muted-light">
+                            {stars}
+                            <Star
+                              size={11}
+                              className="mb-0.5 ml-0.5 inline fill-yellow-400 text-yellow-400"
+                            />
+                          </span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-border">
+                            <div
+                              className="h-full rounded-full bg-yellow-400"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                          <span className="w-10 text-right text-xs text-muted">
+                            {percent}%
+                          </span>
                         </div>
-                        <span className="w-10 text-right text-xs text-muted">
-                          {row.percent}%
-                        </span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Review list */}
-                <div className="space-y-4">
-                  {mockReviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="rounded-xl border border-border bg-card p-5"
-                    >
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
-                            {review.userName.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-white">
-                              {review.userName}
-                            </p>
-                            <p className="text-xs text-muted">
-                              {review.date}
-                            </p>
-                          </div>
-                        </div>
-                        <Stars rating={review.rating} size={14} />
-                      </div>
-                      <p className="text-sm leading-relaxed text-muted-light">
-                        {review.comment}
-                      </p>
-                      <button className="mt-3 flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-white">
-                        <ThumbsUp size={13} /> Helpful
-                      </button>
+                {/* Submit a review */}
+                <form
+                  className="mb-8 space-y-4 rounded-xl border border-border bg-card p-5"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!product || !reviewForm.userName.trim() || !reviewForm.comment.trim()) return
+                    createReview.mutate(
+                      {
+                        productId: product.id,
+                        userName: reviewForm.userName.trim(),
+                        rating: reviewForm.rating,
+                        comment: reviewForm.comment.trim(),
+                      },
+                      { onSuccess: () => setReviewForm({ userName: '', rating: 5, comment: '' }) }
+                    )
+                  }}
+                >
+                  <h4 className="text-sm font-bold text-white">{t('product.writeReview', 'Write a review')}</h4>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted">{t('product.yourRating', 'Your rating')}</span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setReviewForm((f) => ({ ...f, rating: n }))}
+                          aria-label={`${n} star`}
+                        >
+                          <Star
+                            size={20}
+                            className={n <= reviewForm.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted'}
+                          />
+                        </button>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={reviewForm.userName}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, userName: e.target.value }))}
+                    placeholder={t('product.yourName', 'Your name') as string}
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-primary focus:outline-none"
+                  />
+                  <textarea
+                    required
+                    rows={3}
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, comment: e.target.value }))}
+                    placeholder={t('product.yourReview', 'Share your experience with this product') as string}
+                    className="w-full resize-none rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-primary focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={createReview.isPending}
+                    className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {createReview.isPending
+                      ? t('product.submittingReview', 'Submitting...')
+                      : t('product.submitReview', 'Submit review')}
+                  </button>
+                </form>
 
-            {/* Q&A */}
-            {activeTab === 'qa' && (
-              <motion.div
-                key="qa"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="mb-6 text-lg font-bold text-white">
-                  Questions & Answers
-                </h3>
-                <div className="space-y-4">
-                  {mockQA.map((qa) => (
-                    <div
-                      key={qa.id}
-                      className="rounded-xl border border-border bg-card p-5"
-                    >
-                      <div className="mb-3 flex items-start gap-3">
-                        <MessageSquare
-                          size={18}
-                          className="mt-0.5 shrink-0 text-primary"
-                        />
-                        <div>
-                          <p className="text-sm font-semibold text-white">
-                            {qa.question}
-                          </p>
-                          <p className="mt-1 text-xs text-muted">
-                            Asked by {qa.asker} &middot; {qa.date}
-                          </p>
+                {/* Review list */}
+                {reviews.length === 0 ? (
+                  <p className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted">
+                    {t('product.noReviews', 'No reviews yet — be the first to review this product.')}
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="rounded-xl border border-border bg-card p-5"
+                      >
+                        <div className="mb-3 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                              {review.userName.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-white">
+                                {review.userName}
+                              </p>
+                              <p className="text-xs text-muted">
+                                {new Date(review.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <Stars rating={review.rating} size={14} />
                         </div>
-                      </div>
-                      <div className="ml-8 rounded-lg border-l-2 border-primary/30 bg-card-hover p-4">
                         <p className="text-sm leading-relaxed text-muted-light">
-                          {qa.answer}
-                        </p>
-                        <p className="mt-2 text-xs text-muted">
-                          {qa.answeredBy} &middot; {qa.answerDate}
+                          {review.comment}
                         </p>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </div>

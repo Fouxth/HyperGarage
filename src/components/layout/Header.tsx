@@ -11,6 +11,8 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 const navLinks = [
   { to: '/', label: 'nav.home' },
@@ -26,7 +28,8 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const cartCount = 3; // TODO: wire to cart state
+  const { count: cartCount } = useCart();
+  const { ids: wishlistIds } = useWishlist();
 
   const toggleLanguage = () => {
     const next = i18n.language === 'th' ? 'en' : 'th';
@@ -96,7 +99,7 @@ export default function Header() {
                     type="button"
                     onClick={() => setSearchExpanded(!searchExpanded)}
                     className="flex-shrink-0 flex items-center justify-center w-9 h-9 text-muted hover:text-white transition-colors"
-                    aria-label={t('search')}
+                    aria-label={t('nav.search')}
                   >
                     <Search className="w-4 h-4" />
                   </button>
@@ -115,17 +118,22 @@ export default function Header() {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="flex items-center justify-center w-9 h-9 rounded-full text-muted hover:text-white hover:bg-white/5 transition-colors"
-                aria-label={t('wishlist')}
+                className="relative flex items-center justify-center w-9 h-9 rounded-full text-muted hover:text-white hover:bg-white/5 transition-colors"
+                aria-label={t('nav.wishlist')}
               >
                 <Heart className="w-[18px] h-[18px]" />
+                {wishlistIds.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary rounded-full">
+                    {wishlistIds.length}
+                  </span>
+                )}
               </Link>
 
               {/* Cart */}
               <Link
                 to="/cart"
                 className="relative flex items-center justify-center w-9 h-9 rounded-full text-muted hover:text-white hover:bg-white/5 transition-colors"
-                aria-label={t('cart')}
+                aria-label={t('nav.cart')}
               >
                 <ShoppingCart className="w-[18px] h-[18px]" />
                 {cartCount > 0 && (
@@ -139,7 +147,7 @@ export default function Header() {
               <Link
                 to="/account"
                 className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full text-muted hover:text-white hover:bg-white/5 transition-colors"
-                aria-label={t('account')}
+                aria-label={t('nav.account')}
               >
                 <User className="w-[18px] h-[18px]" />
               </Link>
@@ -245,7 +253,7 @@ export default function Header() {
                   className="flex items-center gap-3 text-sm text-muted hover:text-white transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  {t('account')}
+                  {t('nav.account')}
                 </Link>
                 <button
                   type="button"

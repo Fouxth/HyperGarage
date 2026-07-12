@@ -56,17 +56,69 @@ export interface CartItem {
   quantity: number
 }
 
+export interface OrderItem {
+  id: string
+  productId: string
+  productName: string
+  productSlug: string
+  productImage?: string
+  quantity: number
+  priceEach: number
+}
+
 export interface Order {
   id: string
   orderNumber: string
   customer: string
-  items: CartItem[]
+  phone: string
+  items: OrderItem[]
   total: number
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   paymentMethod: string
   paymentStatus: 'pending' | 'paid' | 'refunded'
   createdAt: string
   shippingAddress: string
+}
+
+export interface StoreSettings {
+  id: string
+  storeName: string
+  contactEmail: string
+  contactPhone: string
+  address: string
+  currency: string
+  maintenanceMode: boolean
+  updatedAt: string
+}
+
+export interface ActivityEvent {
+  type: 'order' | 'review' | 'product'
+  message: string
+  createdAt: string
+}
+
+export interface TopProduct {
+  name: string
+  quantity: number
+  revenue: number
+}
+
+export interface ReportsData {
+  topProducts: TopProduct[]
+  revenueByPaymentMethod: { method: string; total: number }[]
+  ordersByStatus: { status: string; count: number }[]
+}
+
+export interface Coupon {
+  id: string
+  code: string
+  type: 'percent' | 'fixed'
+  value: number
+  active: boolean
+  usageLimit?: number
+  usedCount: number
+  expiresAt?: string
+  createdAt: string
 }
 
 export interface Review {
@@ -98,13 +150,9 @@ export interface VehicleGeneration {
 
 export interface AdminStats {
   revenue: number
-  revenueChange: number
   orders: number
-  ordersChange: number
-  visitors: number
-  visitorsChange: number
   customers: number
-  customersChange: number
+  totalProducts: number
 }
 
 export interface SalesData {

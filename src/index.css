@@ -18,7 +18,7 @@
   --color-error: #EF4444;
   --color-info: #3B82F6;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -43,6 +43,8 @@ body {
   background: var(--color-bg);
   color: white;
   overflow-x: hidden;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
 }
 
 @keyframes fade-in {
