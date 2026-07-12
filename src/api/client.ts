@@ -131,14 +131,16 @@ export interface ProductsQuery {
   vehicleEngine?: string
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
+
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`/api${path}`)
+  const res = await fetch(`${API_BASE}${path}`)
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   return res.json()
 }
 
 async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body !== undefined ? JSON.stringify(body) : undefined,
