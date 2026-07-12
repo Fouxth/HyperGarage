@@ -284,14 +284,18 @@
         .markdown-body td { padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); color: var(--text-muted); background-color: var(--bg-panel); }
 
         .mermaid {
-            background-color: var(--bg-diagram) !important;
+            background-color: var(--bg-panel) !important;
+            border: 1px solid var(--border-color);
             padding: 1.5rem;
             border-radius: 14px;
             box-shadow: var(--shadow);
-            display: flex;
-            justify-content: center;
             margin: 2rem 0;
             overflow-x: auto;
+            text-align: center;
+        }
+        .mermaid svg {
+            max-width: none !important;
+            height: auto !important;
         }
 
         .info-alert {
