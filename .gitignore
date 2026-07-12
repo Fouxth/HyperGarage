@@ -30,3 +30,6 @@ server/prisma/*.js
 *.njsproj
 *.sln
 *.sw?
+
+# Allow tracking production environment configuration (Vite base URLs)
+!.env.production
