@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Calculator — ระบบคำนวณสินเชื่อบ้านแบบลดต้นลดดอก</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --font-display: 'Space Grotesk', 'Sarabun', sans-serif;
+            --font-body: 'Sarabun', sans-serif;
+            --bg-page: #faf7f2;
+            --bg-panel: #ffffff;
+            --text-main: #1c1a17;
+            --text-muted: #6b6459;
+            --primary: #d6001c;
+            --primary-soft: rgba(214, 0, 28, 0.08);
+            --border-color: #e8e2d6;
+            --shadow: 0 8px 24px -8px rgb(28 26 23 / 0.12);
+            --green: #16a34a;
+            --green-soft: rgba(22, 163, 74, 0.08);
+            --blue: #2563eb;
+            --blue-soft: rgba(37, 99, 235, 0.08);
+            --orange: #ea580c;
+            --orange-soft: rgba(234, 88, 12, 0.08);
+        }
+
+        .dark-mode-vars {
+            --bg-page: #0b0b0b;
+            --bg-panel: #161616;
+            --text-main: #f5f2ec;
+            --text-muted: #9a9186;
+            --primary: #ff2b40;
+            --primary-soft: rgba(255, 43, 64, 0.12);
+            --border-color: #2b2b2b;
+            --shadow: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+            --green: #22c55e;
+            --green-soft: rgba(34, 197, 94, 0.12);
+            --blue: #60a5fa;
+            --blue-soft: rgba(96, 165, 250, 0.12);
+            --orange: #fb923c;
+            --orange-soft: rgba(251, 146, 60, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 90;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 1.5rem;
+            background-color: var(--bg-page);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(6px);
+        }
+
+        .brand-mark {
+            display: flex; align-items: center; gap: 0.6rem;
+            text-decoration: none; color: var(--text-main);
+        }
+        .brand-mark .logo-dot {
+            width: 10px; height: 10px; border-radius: 2px;
+            background: var(--primary); transform: rotate(45deg); flex-shrink: 0;
+        }
+        .brand-mark span { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+        .brand-mark small {
+            display: block; font-family: var(--font-body);
+            font-weight: 400; font-size: 0.68rem;
+            color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;
+        }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+        .pill-btn {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: var(--bg-panel); border: 1px solid var(--border-color);
+            color: var(--text-main); font-family: var(--font-body);
+            font-size: 0.82rem; font-weight: 600;
+            padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer;
+            text-decoration: none;
+        }
+        .pill-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .icon-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 999px; border: 1px solid var(--border-color);
+            background: var(--bg-panel); color: var(--text-main); cursor: pointer;
+        }
+        .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .container {
+            max-width: 960px; margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+        .page-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--primary-soft); color: var(--primary);
+            padding: 0.35rem 0.85rem; border-radius: 999px;
+            font-size: 0.78rem; font-weight: 600;
+            font-family: var(--font-display);
+            margin-bottom: 1rem;
+        }
+        .page-header h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 700; line-height: 1.25;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem; line-height: 1.7;
+            max-width: 650px;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .input-panel, .result-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+        }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .panel-title i { color: var(--primary); }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-main); margin-bottom: 0.5rem;
+        }
+        .form-group label small {
+            color: var(--text-muted); font-weight: 400;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex; align-items: center;
+        }
+        .input-wrap input {
+            width: 100%; padding: 0.85rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-display);
+            font-size: 1.1rem; font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .input-wrap input:focus { border-color: var(--primary); }
+        .input-wrap .unit {
+            position: absolute; right: 1rem;
+            font-size: 0.82rem; color: var(--text-muted);
+            font-weight: 600; pointer-events: none;
+        }
+
+        .range-info {
+            display: flex; justify-content: space-between;
+            margin-top: 0.35rem; font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .calc-btn {
+            width: 100%; padding: 0.9rem;
+            background: var(--primary); color: #fff;
+            border: none; border-radius: 10px;
+            font-family: var(--font-display);
+            font-size: 1rem; font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .calc-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .calc-btn:active { transform: translateY(0); }
+
+        .result-card {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 0.85rem;
+        }
+        .result-card.red { background: var(--primary-soft); }
+        .result-card.green { background: var(--green-soft); }
+        .result-card.blue { background: var(--blue-soft); }
+        .result-card.orange { background: var(--orange-soft); }
+
+        .result-label {
+            font-size: 0.78rem; font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .result-value {
+            font-family: var(--font-display);
+            font-size: 1.5rem; font-weight: 700;
+        }
+        .result-card.red .result-value { color: var(--primary); }
+        .result-card.green .result-value { color: var(--green); }
+        .result-card.blue .result-value { color: var(--blue); }
+        .result-card.orange .result-value { color: var(--orange); }
+
+        .result-sub {
+            font-size: 0.78rem; color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .chart-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .bar-chart {
+            display: flex; align-items: flex-end;
+            gap: 2px; height: 200px;
+            margin-top: 1rem;
+            padding: 0 0.5rem;
+        }
+        .bar-group {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; height: 100%;
+            justify-content: flex-end;
+            position: relative;
+            cursor: pointer;
+        }
+        .bar-segment {
+            width: 100%; border-radius: 3px 3px 0 0;
+            transition: opacity 0.15s;
+            min-height: 1px;
+        }
+        .bar-segment.interest { background: var(--primary); border-radius: 3px 3px 0 0; }
+        .bar-segment.principal { background: var(--green); border-radius: 0; }
+        .bar-group:first-child .bar-segment.principal { border-radius: 0 0 3px 3px; }
+
+        .bar-tooltip {
+            display: none;
+            position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-main); color: var(--bg-page);
+            padding: 0.4rem 0.65rem; border-radius: 6px;
+            font-size: 0.72rem; white-space: nowrap;
+            z-index: 10; pointer-events: none;
+            margin-bottom: 4px;
+        }
+        .bar-group:hover .bar-tooltip { display: block; }
+
+        .chart-legend {
+            display: flex; gap: 1.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem; color: var(--text-muted);
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+        .legend-dot {
+            width: 10px; height: 10px; border-radius: 3px;
+        }
+        .legend-dot.principal { background: var(--green); }
+        .legend-dot.interest { background: var(--primary); }
+
+        .table-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-controls {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;
+        }
+
+        .view-toggle {
+            display: flex; gap: 0.25rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 3px;
+        }
+        .view-toggle button {
+            padding: 0.4rem 0.85rem; border: none;
+            background: transparent; color: var(--text-muted);
+            font-family: var(--font-body); font-size: 0.8rem; font-weight: 600;
+            border-radius: 6px; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .view-toggle button.active {
+            background: var(--bg-panel);
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+        }
+
+        .schedule-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .schedule-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.83rem;
+        }
+        .schedule-table th {
+            background: var(--primary-soft);
+            color: var(--text-main);
+            font-family: var(--font-display);
+            font-weight: 600; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            padding: 0.7rem 0.85rem; text-align: right;
+            border-bottom: 2px solid var(--primary);
+            position: sticky; top: 0;
+        }
+        .schedule-table th:first-child { text-align: center; }
+        .schedule-table td {
+            padding: 0.6rem 0.85rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            text-align: right;
+            font-family: var(--font-display);
+            font-weight: 500;
+            background: var(--bg-panel);
+        }
+        .schedule-table td:first-child { text-align: center; color: var(--text-main); font-weight: 600; }
+        .schedule-table tr:hover td { background: var(--primary-soft); }
+        .schedule-table .highlight-principal { color: var(--green); font-weight: 600; }
+        .schedule-table .highlight-interest { color: var(--primary); font-weight: 600; }
+
+        .formula-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .formula-box {
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            text-align: center;
+            line-height: 2;
+        }
+
+        .formula-vars {
+            display: grid; grid-template-columns: auto 1fr;
+            gap: 0.4rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        .formula-vars dt {
+            font-family: var(--font-display);
+            font-weight: 700; color: var(--primary);
+            text-align: right;
+        }
+        .formula-vars dd { color: var(--text-muted); }
+
+        .doc-footer {
+            margin-top: 3rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem; color: var(--text-muted);
+            display: flex; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.5rem;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .topbar { padding: 0.8rem 1rem; }
+            .container { padding: 1.5rem 1rem 3rem; }
+            .calc-grid { grid-template-columns: 1fr; }
+            .bar-chart { height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="/docs/" class="brand-mark">
+            <span class="logo-dot"></span>
+            <span>HyperGarage<br><small>Mortgage Calculator</small></span>
+        </a>
+        <div class="topbar-actions">
+            <a class="pill-btn" href="/docs/"><i class="fa-solid fa-house"></i> <span>หน้าหลัก</span></a>
+            <button class="icon-btn" id="themeToggle" title="สลับธีม"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="page-header">
+            <div class="page-badge"><i class="fa-solid fa-calculator"></i> Lab #9 — Workshop 5</div>
+            <h1>ระบบคำนวณสินเชื่อบ้าน<br>แบบลดต้นลดดอก</h1>
+            <p>คำนวณค่างวดผ่อนชำระบ้านด้วยวิธี Effective Rate (ลดต้นลดดอก) ตามรูปแบบที่สถาบันการเงินใช้จริง พร้อมตารางผ่อนชำระรายเดือน</p>
+        </div>
+
+        <div class="calc-grid">
+            <div class="input-panel">
+                <div class="panel-title"><i class="fa-solid fa-sliders"></i> ข้อมูลสินเชื่อ</div>
+
+                <div class="form-group">
+                    <label>จำนวนเงินกู้ <small>(บาท)</small></label>
+                    <div class="input-wrap">
+                        <input type="text" id="loanAmount" value="3,000,000" inputmode="numeric">
+                        <span class="unit">บาท</span>
+                    </div>
+                    <div class="range-info"><span>100,000</span><span>50,000,000</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label>อัตราดอกเบี้ย <small>(ต่อปี)</small></label>
+                    <div class="input-wrap">
+                        <input type="text" id="interestRate" value="6.50" inputmode="decimal">
+                        <span class="unit">% ต่อปี</span>
+                    </div>
+                    <div class="range-info"><span>0.50%</span><span>20.00%</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label>ระยะเวลากู้ <small>(ปี)</small></label>
+                    <div class="input-wrap">
+                        <input type="text" id="loanTerm" value="30" inputmode="numeric">
+                        <span class="unit">ปี</span>
+                    </div>
+                    <div class="range-info"><span>1 ปี</span><span>40 ปี</span></div>
+                </div>
+
+                <button class="calc-btn" id="calcBtn">
+                    <i class="fa-solid fa-calculator"></i>&ensp;คำนวณ
+                </button>
+            </div>
+
+            <div class="result-panel" id="resultPanel">
+                <div class="panel-title"><i class="fa-solid fa-chart-pie"></i> สรุปผลการคำนวณ</div>
+
+                <div class="result-card red">
+                    <div class="result-label">ค่างวดรายเดือน</div>
+                    <div class="result-value" id="monthlyPayment">—</div>
+                    <div class="result-sub" id="monthlyPaymentSub"></div>
+                </div>
+
+                <div class="result-card green">
+                    <div class="result-label">เงินต้นรวม</div>
+                    <div class="result-value" id="totalPrincipal">—</div>
+                </div>
+
+                <div class="result-card orange">
+                    <div class="result-label">ดอกเบี้ยรวมตลอดสัญญา</div>
+                    <div class="result-value" id="totalInterest">—</div>
+                    <div class="result-sub" id="interestRatio"></div>
+                </div>
+
+                <div class="result-card blue">
+                    <div class="result-label">ยอดชำระรวมทั้งหมด</div>
+                    <div class="result-value" id="totalPayment">—</div>
+                    <div class="result-sub" id="totalMonths"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section" id="chartSection" style="display:none;">
+            <div class="panel-title"><i class="fa-solid fa-chart-bar"></i> กราฟแสดงสัดส่วนเงินต้น vs ดอกเบี้ยรายปี</div>
+            <div class="bar-chart" id="barChart"></div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot principal"></div> เงินต้น</div>
+                <div class="legend-item"><div class="legend-dot interest"></div> ดอกเบี้ย</div>
+            </div>
+        </div>
+
+        <div class="table-section" id="tableSection" style="display:none;">
+            <div class="table-controls">
+                <div class="panel-title" style="margin-bottom:0;"><i class="fa-solid fa-table"></i> ตารางผ่อนชำระ</div>
+                <div class="view-toggle">
+                    <button class="active" id="viewMonthly" onclick="setView('monthly')">รายเดือน</button>
+                    <button id="viewYearly" onclick="setView('yearly')">รายปี</button>
+                </div>
+            </div>
+            <div class="schedule-wrap" style="max-height: 500px; overflow-y: auto;">
+                <table class="schedule-table" id="scheduleTable">
+                    <thead id="scheduleHead"></thead>
+                    <tbody id="scheduleBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="formula-section">
+            <div class="panel-title"><i class="fa-solid fa-square-root-variable"></i> สูตรการคำนวณ — ลดต้นลดดอก (Effective Rate)</div>
+
+            <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.7;margin-bottom:1rem;">
+                วิธี<strong style="color:var(--text-main);">ลดต้นลดดอก</strong> (Reducing Balance / Effective Rate) คำนวณดอกเบี้ยจาก<strong style="color:var(--text-main);">ยอดเงินต้นคงเหลือ</strong>ในแต่ละเดือน — เมื่อผ่อนไปเรื่อยๆ เงินต้นลดลง ดอกเบี้ยก็ลดตาม ทำให้สัดส่วนเงินต้นในค่างวดเพิ่มขึ้นเรื่อยๆ
+            </p>
+
+            <div class="formula-box">
+                <strong>M = P &times; [ r(1 + r)<sup>n</sup> ] / [ (1 + r)<sup>n</sup> &minus; 1 ]</strong>
+            </div>
+
+            <dl class="formula-vars">
+                <dt>M</dt><dd>ค่างวดรายเดือน (Monthly Payment)</dd>
+                <dt>P</dt><dd>จำนวนเงินกู้ (Principal)</dd>
+                <dt>r</dt><dd>อัตราดอกเบี้ยต่อเดือน = อัตราดอกเบี้ยต่อปี &divide; 12</dd>
+                <dt>n</dt><dd>จำนวนงวดทั้งหมด = ระยะเวลากู้ (ปี) &times; 12</dd>
+            </dl>
+
+            <div style="margin-top:1.5rem;">
+                <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;">
+                    <strong style="color:var(--text-main);">แต่ละงวด:</strong><br>
+                    &bull; ดอกเบี้ยงวดนี้ = ยอดคงเหลือ &times; r<br>
+                    &bull; เงินต้นงวดนี้ = M &minus; ดอกเบี้ยงวดนี้<br>
+                    &bull; ยอดคงเหลือใหม่ = ยอดคงเหลือเดิม &minus; เงินต้นงวดนี้
+                </p>
+            </div>
+        </div>
+
+        <div class="doc-footer">
+            <span>HyperGarage &mdash; CSI 204 Workshop #5</span>
+            <a href="/docs/" style="color: var(--primary); text-decoration: none;">&larr; กลับหน้าเอกสาร</a>
+        </div>
+    </div>
+
+    <script>
+        const fmt = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const fmtInt = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+        function parseNumber(str) {
+            return parseFloat(str.replace(/,/g, '')) || 0;
+        }
+
+        function formatInput(input, isDecimal) {
+            let val = input.value.replace(/[^0-9.]/g, '');
+            if (isDecimal) {
+                const parts = val.split('.');
+                if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+                input.value = val;
+            } else {
+                val = val.replace(/\./g, '');
+                input.value = val ? parseInt(val).toLocaleString('en-US') : '';
+            }
+        }
+
+        document.getElementById('loanAmount').addEventListener('input', function() { formatInput(this, false); });
+        document.getElementById('interestRate').addEventListener('input', function() { formatInput(this, true); });
+        document.getElementById('loanTerm').addEventListener('input', function() { formatInput(this, false); });
+
+        let scheduleData = [];
+        let currentView = 'monthly';
+
+        function calculate() {
+            const P = parseNumber(document.getElementById('loanAmount').value);
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const years = parseInt(document.getElementById('loanTerm').value.replace(/,/g, '')) || 0;
+
+            if (P <= 0 || annualRate <= 0 || years <= 0) return;
+
+            const r = annualRate / 100 / 12;
+            const n = years * 12;
+            const M = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
+            const totalPayment = M * n;
+            const totalInterest = totalPayment - P;
+
+            document.getElementById('monthlyPayment').textContent = fmt(M) + ' บาท';
+            document.getElementById('monthlyPaymentSub').textContent = 'คงที่ทุกเดือน ตลอด ' + fmtInt(n) + ' งวด';
+            document.getElementById('totalPrincipal').textContent = fmt(P) + ' บาท';
+            document.getElementById('totalInterest').textContent = fmt(totalInterest) + ' บาท';
+            document.getElementById('interestRatio').textContent = 'คิดเป็น ' + ((totalInterest / P) * 100).toFixed(1) + '% ของเงินต้น';
+            document.getElementById('totalPayment').textContent = fmt(totalPayment) + ' บาท';
+            document.getElementById('totalMonths').textContent = fmtInt(n) + ' งวด (' + years + ' ปี)';
+
+            scheduleData = [];
+            let balance = P;
+            for (let i = 1; i <= n; i++) {
+                const interestPay = balance * r;
+                const principalPay = M - interestPay;
+                balance = Math.max(0, balance - principalPay);
+                scheduleData.push({
+                    month: i,
+                    payment: M,
+                    principal: principalPay,
+                    interest: interestPay,
+                    balance: balance
+                });
+            }
+
+            renderChart(years);
+            renderTable();
+
+            document.getElementById('chartSection').style.display = '';
+            document.getElementById('tableSection').style.display = '';
+        }
+
+        function renderChart(years) {
+            const chart = document.getElementById('barChart');
+            chart.innerHTML = '';
+
+            const yearlyData = [];
+            for (let y = 0; y < years; y++) {
+                let principal = 0, interest = 0;
+                for (let m = y * 12; m < (y + 1) * 12 && m < scheduleData.length; m++) {
+                    principal += scheduleData[m].principal;
+                    interest += scheduleData[m].interest;
+                }
+                yearlyData.push({ year: y + 1, principal, interest, total: principal + interest });
+            }
+
+            const maxTotal = Math.max(...yearlyData.map(d => d.total));
+
+            yearlyData.forEach(d => {
+                const group = document.createElement('div');
+                group.className = 'bar-group';
+
+                const pctInterest = (d.interest / maxTotal) * 100;
+                const pctPrincipal = (d.principal / maxTotal) * 100;
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'bar-tooltip';
+                tooltip.textContent = 'ปี ' + d.year + ': ต้น ' + fmtInt(d.principal) + ' / ดอก ' + fmtInt(d.interest);
+
+                const interestBar = document.createElement('div');
+                interestBar.className = 'bar-segment interest';
+                interestBar.style.height = pctInterest + '%';
+
+                const principalBar = document.createElement('div');
+                principalBar.className = 'bar-segment principal';
+                principalBar.style.height = pctPrincipal + '%';
+
+                group.appendChild(tooltip);
+                group.appendChild(interestBar);
+                group.appendChild(principalBar);
+                chart.appendChild(group);
+            });
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.getElementById('viewMonthly').classList.toggle('active', view === 'monthly');
+            document.getElementById('viewYearly').classList.toggle('active', view === 'yearly');
+            renderTable();
+        }
+
+        function renderTable() {
+            const head = document.getElementById('scheduleHead');
+            const body = document.getElementById('scheduleBody');
+
+            if (currentView === 'monthly') {
+                head.innerHTML = '<tr><th>งวดที่</th><th>ค่างวด</th><th>เงินต้น</th><th>ดอกเบี้ย</th><th>ยอดคงเหลือ</th></tr>';
+                body.innerHTML = scheduleData.map(d => `<tr>
+                    <td>${d.month}</td>
+                    <td>${fmt(d.payment)}</td>
+                    <td class="highlight-principal">${fmt(d.principal)}</td>
+                    <td class="highlight-interest">${fmt(d.interest)}</td>
+                    <td>${fmt(d.balance)}</td>
+                </tr>`).join('');
+            } else {
+                head.innerHTML = '<tr><th>ปีที่</th><th>ค่างวดรวม</th><th>เงินต้นรวม</th><th>ดอกเบี้ยรวม</th><th>ยอดคงเหลือ</th></tr>';
+                const years = Math.ceil(scheduleData.length / 12);
+                let rows = '';
+                for (let y = 0; y < years; y++) {
+                    let payment = 0, principal = 0, interest = 0;
+                    let endBalance = 0;
+                    for (let m = y * 12; m < (y + 1) * 12 && m < scheduleData.length; m++) {
+                        payment += scheduleData[m].payment;
+                        principal += scheduleData[m].principal;
+                        interest += scheduleData[m].interest;
+                        endBalance = scheduleData[m].balance;
+                    }
+                    rows += `<tr>
+                        <td>${y + 1}</td>
+                        <td>${fmt(payment)}</td>
+                        <td class="highlight-principal">${fmt(principal)}</td>
+                        <td class="highlight-interest">${fmt(interest)}</td>
+                        <td>${fmt(endBalance)}</td>
+                    </tr>`;
+                }
+                body.innerHTML = rows;
+            }
+        }
+
+        document.getElementById('calcBtn').addEventListener('click', calculate);
+
+        document.querySelectorAll('.input-wrap input').forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') calculate();
+            });
+        });
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                html.classList.add('dark', 'dark-mode-vars');
+                themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+                localStorage.setItem('docs-theme', 'dark');
+            } else {
+                html.classList.remove('dark', 'dark-mode-vars');
+                html.classList.add('light');
+                themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('docs-theme', 'light');
+            }
+        });
+        if (localStorage.getItem('docs-theme') === 'dark') {
+            document.documentElement.classList.remove('light');
+            document.documentElement.classList.add('dark', 'dark-mode-vars');
+            themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+        }
+
+        calculate();
+    </script>
+</body>
+</html>

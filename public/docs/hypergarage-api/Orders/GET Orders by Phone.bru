@@ -1,0 +1,21 @@
+meta {
+  name: GET Orders by Phone
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/orders?phone=0899999999
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Should return array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

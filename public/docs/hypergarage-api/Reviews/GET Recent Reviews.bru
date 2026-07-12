@@ -1,0 +1,17 @@
+meta {
+  name: GET Recent Reviews
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/reviews/recent
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: GET Store Settings
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/settings
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Store name is HyperGarage", function() {
+    expect(res.getBody().storeName).to.equal("HyperGarage");
+  });
+}
