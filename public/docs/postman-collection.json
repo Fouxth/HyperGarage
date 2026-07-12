@@ -1,0 +1,131 @@
+{
+	"info": {
+		"_postman_id": "hypergarage-api-collection",
+		"name": "HyperGarage API",
+		"description": "API Testing Collection สำหรับระบบ HyperGarage E-Commerce",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:4000/api" }
+	],
+	"item": [
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "GET All Products",
+					"request": { "method": "GET", "url": "{{baseUrl}}/products" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Response must be in JSON format', function() { pm.response.to.be.json; });",
+						"pm.test('Response should be an array', function() { pm.expect(pm.response.json()).to.be.an('array'); });",
+						"pm.test('Each product should have required fields', function() { const d = pm.response.json(); if(d.length>0){ pm.expect(d[0]).to.have.property('id'); pm.expect(d[0]).to.have.property('name'); pm.expect(d[0]).to.have.property('price'); pm.collectionVariables.set('productId', d[0].id); }});",
+						"pm.test('Response time < 2000ms', function() { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+					]}}]
+				},
+				{
+					"name": "GET Products with Compatibility Filter",
+					"request": { "method": "GET", "url": "{{baseUrl}}/products?vehicleBrand=Honda&vehicleModel=Civic&vehicleEngine=B16A" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Response must be JSON', function() { pm.response.to.be.json; });",
+						"pm.test('Response time < 2000ms', function() { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "GET All Categories",
+					"request": { "method": "GET", "url": "{{baseUrl}}/categories" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Response should be an array', function() { pm.expect(pm.response.json()).to.be.an('array'); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "POST Create Order",
+					"request": {
+						"method": "POST", "url": "{{baseUrl}}/orders",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\"customer\":\"ทดสอบ ระบบ\",\"phone\":\"0899999999\",\"shippingAddress\":\"123 ถนนทดสอบ กรุงเทพฯ 10100\",\"paymentMethod\":\"cod\",\"items\":[{\"productId\":\"{{productId}}\",\"quantity\":1}]}" }
+					},
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 201', function() { pm.response.to.have.status(201); });",
+						"pm.test('Order has orderNumber with HG', function() { const d = pm.response.json(); pm.expect(d).to.have.property('orderNumber'); pm.expect(d.orderNumber).to.include('HG'); });",
+						"pm.test('Order status is pending', function() { pm.expect(pm.response.json().status).to.equal('pending'); });",
+						"pm.test('Response time < 2000ms', function() { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+					]}}]
+				},
+				{
+					"name": "GET Orders by Phone",
+					"request": { "method": "GET", "url": "{{baseUrl}}/orders?phone=0899999999" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Should return array', function() { pm.expect(pm.response.json()).to.be.an('array'); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "POST Create Review",
+					"request": {
+						"method": "POST", "url": "{{baseUrl}}/reviews",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\"productId\":\"{{productId}}\",\"userName\":\"สมชาย ทดสอบ\",\"rating\":5,\"comment\":\"สินค้าคุณภาพดี ใส่แล้วเครื่องแรงขึ้นมาก\"}" }
+					},
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 201', function() { pm.response.to.have.status(201); });",
+						"pm.test('Rating is 5', function() { pm.expect(pm.response.json().rating).to.equal(5); });"
+					]}}]
+				},
+				{
+					"name": "GET Recent Reviews",
+					"request": { "method": "GET", "url": "{{baseUrl}}/reviews/recent" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Stats & Settings",
+			"item": [
+				{
+					"name": "GET Dashboard Stats",
+					"request": { "method": "GET", "url": "{{baseUrl}}/stats/dashboard" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Has revenue', function() { pm.expect(pm.response.json()).to.have.property('revenue'); });"
+					]}}]
+				},
+				{
+					"name": "GET Store Settings",
+					"request": { "method": "GET", "url": "{{baseUrl}}/settings" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('Store name is HyperGarage', function() { pm.expect(pm.response.json().storeName).to.equal('HyperGarage'); });"
+					]}}]
+				},
+				{
+					"name": "GET Health Check",
+					"request": { "method": "GET", "url": "{{baseUrl}}/health" },
+					"event": [{ "listen": "test", "script": { "exec": [
+						"pm.test('Status code should be 200', function() { pm.response.to.have.status(200); });",
+						"pm.test('ok is true', function() { pm.expect(pm.response.json().ok).to.be.true; });"
+					]}}]
+				}
+			]
+		}
+	]
+}

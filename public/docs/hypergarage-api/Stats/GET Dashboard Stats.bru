@@ -1,0 +1,21 @@
+meta {
+  name: GET Dashboard Stats
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/stats/dashboard
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Has revenue", function() {
+    expect(res.getBody()).to.have.property("revenue");
+  });
+}

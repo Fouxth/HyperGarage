@@ -1,0 +1,25 @@
+meta {
+  name: GET Products with Compatibility Filter
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/products?vehicleBrand=Honda&vehicleModel=Civic&vehicleEngine=B16A
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response must be JSON", function() {
+    expect(res.getHeader("content-type")).to.include("application/json");
+  });
+
+  test("Response time < 2000ms", function() {
+    expect(res.getResponseTime()).to.be.below(2000);
+  });
+}

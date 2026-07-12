@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperGarage — Project Documentation</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --font-display: 'Space Grotesk', 'Sarabun', sans-serif;
+            --font-body: 'Sarabun', sans-serif;
+            --bg-page: #faf7f2;
+            --bg-panel: #ffffff;
+            --text-main: #1c1a17;
+            --text-muted: #6b6459;
+            --primary: #d6001c;
+            --primary-soft: rgba(214, 0, 28, 0.08);
+            --border-color: #e8e2d6;
+            --shadow: 0 8px 24px -8px rgb(28 26 23 / 0.12);
+        }
+
+        .dark-mode-vars {
+            --bg-page: #0b0b0b;
+            --bg-panel: #161616;
+            --text-main: #f5f2ec;
+            --text-muted: #9a9186;
+            --primary: #ff2b40;
+            --primary-soft: rgba(255, 43, 64, 0.12);
+            --border-color: #2b2b2b;
+            --shadow: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 90;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 1.5rem;
+            background-color: var(--bg-page);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(6px);
+        }
+
+        .brand-mark {
+            display: flex; align-items: center; gap: 0.6rem;
+            text-decoration: none; color: var(--text-main);
+        }
+        .brand-mark .logo-dot {
+            width: 10px; height: 10px; border-radius: 2px;
+            background: var(--primary); transform: rotate(45deg); flex-shrink: 0;
+        }
+        .brand-mark span { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+        .brand-mark small {
+            display: block; font-family: var(--font-body);
+            font-weight: 400; font-size: 0.68rem;
+            color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;
+        }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+        .pill-btn {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: var(--bg-panel); border: 1px solid var(--border-color);
+            color: var(--text-main); font-family: var(--font-body);
+            font-size: 0.82rem; font-weight: 600;
+            padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer;
+            text-decoration: none;
+        }
+        .pill-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .icon-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 999px; border: 1px solid var(--border-color);
+            background: var(--bg-panel); color: var(--text-main); cursor: pointer;
+        }
+        .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .container {
+            max-width: 900px; margin: 0 auto;
+            padding: 3rem 1.5rem 4rem;
+        }
+
+        .hero {
+            margin-bottom: 3.5rem;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--primary-soft); color: var(--primary);
+            padding: 0.35rem 0.85rem; border-radius: 999px;
+            font-size: 0.78rem; font-weight: 600;
+            font-family: var(--font-display);
+            letter-spacing: 0.03em;
+            margin-bottom: 1.25rem;
+        }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700; line-height: 1.2;
+            margin-bottom: 0.75rem;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.05rem; line-height: 1.7;
+            max-width: 600px;
+        }
+
+        .workshop-section {
+            margin-bottom: 3rem;
+        }
+        .workshop-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .workshop-num {
+            width: 36px; height: 36px;
+            background: var(--primary); color: #fff;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .workshop-title {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 1.15rem;
+            color: var(--text-main);
+        }
+        .workshop-subtitle {
+            font-size: 0.82rem; color: var(--text-muted); font-weight: 400;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.35rem;
+            text-decoration: none; color: inherit;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .card-icon {
+            width: 40px; height: 40px;
+            background: var(--primary-soft);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary); font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .card h3 {
+            font-family: var(--font-display);
+            font-size: 0.95rem; font-weight: 600;
+        }
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.85rem; line-height: 1.5;
+        }
+        .card-arrow {
+            margin-top: auto;
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .card:hover .card-arrow { opacity: 1; }
+
+        .srs-link {
+            display: flex; align-items: center; gap: 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.35rem;
+            text-decoration: none; color: inherit;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 3rem;
+        }
+        .srs-link:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .srs-icon {
+            width: 48px; height: 48px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .srs-link h3 {
+            font-family: var(--font-display);
+            font-size: 1rem; font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .srs-link p {
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+
+        .tech-strip {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .tech-tag {
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 0.3rem 0.7rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600;
+            font-family: var(--font-display);
+        }
+
+        .doc-footer {
+            margin-top: 3rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem; color: var(--text-muted);
+            display: flex; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .topbar { padding: 0.8rem 1rem; }
+            .container { padding: 2rem 1.1rem 3rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .card-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="/docs/" class="brand-mark">
+            <span class="logo-dot"></span>
+            <span>HyperGarage<br><small>Project Documentation</small></span>
+        </a>
+        <div class="topbar-actions">
+            <a class="pill-btn" href="/"><i class="fa-solid fa-store"></i> <span>หน้าร้าน</span></a>
+            <button class="icon-btn" id="themeToggle" title="สลับธีม"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="hero">
+            <div class="hero-badge"><i class="fa-solid fa-graduation-cap"></i> CSI 204</div>
+            <h1>HyperGarage</h1>
+            <p>ระบบ E-Commerce สำหรับจำหน่ายอะไหล่แต่งรถยนต์ระดับพรีเมียม — เอกสารประกอบโปรเจกต์</p>
+            <div class="tech-strip" style="margin-top: 1.25rem;">
+                <span class="tech-tag">React 19</span>
+                <span class="tech-tag">TypeScript</span>
+                <span class="tech-tag">Vite 6</span>
+                <span class="tech-tag">Tailwind CSS 4</span>
+                <span class="tech-tag">Express</span>
+                <span class="tech-tag">Prisma</span>
+                <span class="tech-tag">PostgreSQL</span>
+            </div>
+        </div>
+
+        <a class="srs-link" href="/srs.html">
+            <div class="srs-icon"><i class="fa-solid fa-file-lines"></i></div>
+            <div>
+                <h3>System Requirement Specification (SRS)</h3>
+                <p>เอกสาร SRS ฉบับเต็ม — ขอบเขต, Functional/Non-Functional Requirements, Data Model, User Flow</p>
+            </div>
+        </a>
+
+        <!-- W1 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W1</div>
+                <div>
+                    <div class="workshop-title">System Architecture</div>
+                    <div class="workshop-subtitle">Mermaid Architecture & Sequence Diagrams</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=architecture">
+                    <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3>Architecture Diagrams</h3>
+                    <p>3-Tier Architecture, Tech Stack Overview, Checkout Flow, Compatibility Flow</p>
+                    <div class="card-arrow">ดู Diagrams <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W2 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W2</div>
+                <div>
+                    <div class="workshop-title">UML Diagrams</div>
+                    <div class="workshop-subtitle">Use Case Diagram & Class Diagram</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=use-case">
+                    <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>Use Case Diagram</h3>
+                    <p>แผนภาพกรณีใช้งาน — Actors, Use Cases, Relationships</p>
+                    <div class="card-arrow">ดู Diagram <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+                <a class="card" href="/docs/viewer.html?page=class-diagram">
+                    <div class="card-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                    <h3>Class Diagram</h3>
+                    <p>แผนภาพคลาส — 11 models + relationships จาก Prisma Schema</p>
+                    <div class="card-arrow">ดู Diagram <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W3 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W3</div>
+                <div>
+                    <div class="workshop-title">API & Load Testing</div>
+                    <div class="workshop-subtitle">Bruno Collection & JMeter Load Test</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=testing">
+                    <div class="card-icon"><i class="fa-solid fa-flask-vial"></i></div>
+                    <h3>Testing Documentation</h3>
+                    <p>Bruno test scripts + JMeter load test results (10/50/100 users)</p>
+                    <div class="card-arrow">ดูเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W4 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W4</div>
+                <div>
+                    <div class="workshop-title">System Documentation</div>
+                    <div class="workshop-subtitle">การวิเคราะห์ ออกแบบ พัฒนา และทดสอบ</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=analysis">
+                    <div class="card-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                    <h3>System Analysis</h3>
+                    <p>การวิเคราะห์ระบบ — Functional Requirements แบ่งตามกลุ่มผู้ใช้ (ลูกค้า / แอดมิน)</p>
+                    <div class="card-arrow">อ่านเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+                <a class="card" href="/docs/viewer.html?page=design">
+                    <div class="card-icon"><i class="fa-solid fa-pen-ruler"></i></div>
+                    <h3>System Design</h3>
+                    <p>การออกแบบระบบ — 3-Tier Architecture, Database Design, API Endpoints</p>
+                    <div class="card-arrow">อ่านเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+                <a class="card" href="/docs/viewer.html?page=development">
+                    <div class="card-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>Development & Testing</h3>
+                    <p>การพัฒนาและทดสอบ — Tech Stack, Git Workflow, UAT Test Cases</p>
+                    <div class="card-arrow">อ่านเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W5 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W5</div>
+                <div>
+                    <div class="workshop-title">Programming Skills</div>
+                    <div class="workshop-subtitle">Mortgage Calculator — ระบบคำนวณสินเชื่อบ้านแบบลดต้นลดดอก</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/mortgage-calculator.html">
+                    <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                    <h3>Mortgage Calculator</h3>
+                    <p>คำนวณค่างวดผ่อนบ้านแบบ Effective Rate พร้อมกราฟและตารางผ่อนชำระรายเดือน/รายปี</p>
+                    <div class="card-arrow">เปิดแอป <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W6 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W6</div>
+                <div>
+                    <div class="workshop-title">Service Level Agreement</div>
+                    <div class="workshop-subtitle">เอกสารข้อตกลงระดับการให้บริการ (SLA)</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=sla">
+                    <div class="card-icon"><i class="fa-solid fa-file-contract"></i></div>
+                    <h3>SLA Document</h3>
+                    <p>Availability, Performance, Security, Backup Policy, Severity Levels</p>
+                    <div class="card-arrow">อ่านเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- W7 -->
+        <div class="workshop-section">
+            <div class="workshop-header">
+                <div class="workshop-num">W7</div>
+                <div>
+                    <div class="workshop-title">User Acceptance Testing</div>
+                    <div class="workshop-subtitle">การออกแบบและดำเนินการทดสอบ UAT</div>
+                </div>
+            </div>
+            <div class="card-grid">
+                <a class="card" href="/docs/viewer.html?page=uat">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <h3>UAT Test Cases</h3>
+                    <p>Persona-based testing — Customer & Admin UAT 10 test cases ผ่าน 100%</p>
+                    <div class="card-arrow">อ่านเอกสาร <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+        <div class="doc-footer">
+            <span>HyperGarage &mdash; CSI 204 Project Documentation</span>
+            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+
+        themeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                html.classList.add('dark', 'dark-mode-vars');
+                themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+                localStorage.setItem('docs-theme', 'dark');
+            } else {
+                html.classList.remove('dark', 'dark-mode-vars');
+                html.classList.add('light');
+                themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('docs-theme', 'light');
+            }
+        });
+
+        if (localStorage.getItem('docs-theme') === 'dark') {
+            document.documentElement.classList.remove('light');
+            document.documentElement.classList.add('dark', 'dark-mode-vars');
+            themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+        }
+    </script>
+</body>
+</html>

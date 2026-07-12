@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperGarage — Documentation</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --font-display: 'Space Grotesk', 'Sarabun', sans-serif;
+            --font-body: 'Sarabun', sans-serif;
+            --bg-page: #faf7f2;
+            --bg-panel: #ffffff;
+            --bg-diagram: #1c1a17;
+            --text-main: #1c1a17;
+            --text-muted: #6b6459;
+            --primary: #d6001c;
+            --primary-soft: rgba(214, 0, 28, 0.08);
+            --border-color: #e8e2d6;
+            --shadow: 0 8px 24px -8px rgb(28 26 23 / 0.12);
+            --numeral: rgba(28, 26, 23, 0.07);
+        }
+
+        .dark-mode-vars {
+            --bg-page: #0b0b0b;
+            --bg-panel: #161616;
+            --bg-diagram: #0b0b0b;
+            --text-main: #f5f2ec;
+            --text-muted: #9a9186;
+            --primary: #ff2b40;
+            --primary-soft: rgba(255, 43, 64, 0.12);
+            --border-color: #2b2b2b;
+            --shadow: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+            --numeral: rgba(245, 242, 236, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .progress-rail {
+            position: fixed; top: 0; left: 0;
+            height: 3px; width: 0%;
+            background: var(--primary);
+            z-index: 200;
+            transition: width 0.1s linear;
+        }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 90;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 1.5rem;
+            background-color: var(--bg-page);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(6px);
+        }
+
+        .brand-mark {
+            display: flex; align-items: center; gap: 0.6rem;
+            text-decoration: none; color: var(--text-main);
+        }
+        .brand-mark .logo-dot {
+            width: 10px; height: 10px;
+            border-radius: 2px;
+            background: var(--primary);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+        .brand-mark span { font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: 0.01em; }
+        .brand-mark small {
+            display: block; font-family: var(--font-body);
+            font-weight: 400; font-size: 0.68rem;
+            color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;
+        }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+        .pill-btn {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: var(--bg-panel); border: 1px solid var(--border-color);
+            color: var(--text-main); font-family: var(--font-body);
+            font-size: 0.82rem; font-weight: 600;
+            padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer;
+            text-decoration: none;
+        }
+        .pill-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .icon-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 999px; border: 1px solid var(--border-color);
+            background: var(--bg-panel); color: var(--text-main); cursor: pointer;
+        }
+        .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .toc-scrim {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.35); z-index: 150;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .toc-scrim.open { opacity: 1; pointer-events: auto; }
+
+        .toc-drawer {
+            position: fixed; top: 0; right: 0;
+            width: 320px; max-width: 85vw; height: 100vh;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            z-index: 151;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+        }
+        .toc-drawer.open { transform: translateX(0); }
+
+        .toc-drawer-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+        }
+        .toc-drawer-head h2 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; }
+
+        .toc-list { padding: 0.75rem; overflow-y: auto; flex: 1; }
+        .toc-list a {
+            display: block; padding: 0.55rem 0.75rem;
+            font-size: 0.86rem; color: var(--text-muted);
+            text-decoration: none; border-radius: 6px; line-height: 1.4;
+        }
+        .toc-list a.toc-h3 { padding-left: 1.5rem; font-size: 0.8rem; }
+        .toc-list a:hover { background: var(--primary-soft); color: var(--primary); }
+        .toc-list a.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+
+        .doc-wrap { max-width: 760px; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+
+        .markdown-body h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+            font-weight: 700; line-height: 1.25;
+            margin-bottom: 0.75rem; color: var(--text-main);
+        }
+        .markdown-body > p:first-of-type { color: var(--text-main); font-size: 0.95rem; margin-bottom: 2.5rem; opacity: 0.85; }
+
+        .markdown-body h2.chapter-heading {
+            position: relative; font-family: var(--font-display);
+            font-weight: 700; font-size: 1.5rem;
+            margin-top: 4rem; margin-bottom: 1.5rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid var(--border-color);
+            scroll-margin-top: 5rem;
+        }
+        .markdown-body h2.chapter-heading .chapter-num {
+            position: absolute; top: 1.6rem; left: -0.15rem;
+            font-size: 3.2rem; font-weight: 700;
+            color: var(--numeral); line-height: 1;
+            user-select: none; z-index: -1;
+        }
+        .markdown-body h2.chapter-heading .chapter-title { color: var(--text-main); }
+
+        .markdown-body h3.chapter-heading {
+            font-family: var(--font-display);
+            font-weight: 600; font-size: 1.1rem;
+            margin-top: 2.25rem; margin-bottom: 0.85rem;
+            scroll-margin-top: 5rem;
+        }
+        .markdown-body h3.chapter-heading .chapter-num { color: var(--primary); margin-right: 0.5rem; font-weight: 700; }
+
+        .markdown-body h2 {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 1.5rem;
+            margin-top: 3rem; margin-bottom: 1.25rem;
+            color: var(--text-main);
+            scroll-margin-top: 5rem;
+        }
+
+        .markdown-body h3 {
+            font-family: var(--font-display);
+            font-weight: 600; font-size: 1.15rem;
+            margin-top: 2rem; margin-bottom: 0.85rem;
+            color: var(--text-main);
+            scroll-margin-top: 5rem;
+        }
+
+        .markdown-body p { line-height: 1.85; margin-bottom: 1.25rem; color: var(--text-main); font-size: 0.96rem; }
+        .markdown-body ul, .markdown-body ol { margin-bottom: 1.25rem; padding-left: 1.4rem; color: var(--text-main); }
+        .markdown-body li { margin-bottom: 0.55rem; font-size: 0.96rem; line-height: 1.7; }
+        .markdown-body li::marker { color: var(--primary); }
+        .markdown-body hr { border: none; border-top: 1px dashed var(--border-color); margin: 2.5rem 0; }
+        .markdown-body strong { color: var(--text-main); font-weight: 600; }
+        .markdown-body a { color: var(--primary); }
+        .markdown-body code { background-color: var(--primary-soft); color: var(--primary); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.85em; }
+
+        .markdown-body pre {
+            background: var(--bg-diagram);
+            color: #e0ddd5;
+            padding: 1.25rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .markdown-body pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .markdown-body table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            margin-bottom: 1.75rem; font-size: 0.87rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px; overflow: hidden;
+        }
+        .markdown-body th {
+            background-color: transparent; color: var(--text-main);
+            font-family: var(--font-display);
+            font-weight: 600; font-size: 0.78rem;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            padding: 0.75rem 1rem; text-align: left;
+            border-bottom: 2px solid var(--primary);
+            background: var(--primary-soft);
+        }
+        .markdown-body td {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-main);
+            background-color: var(--bg-panel);
+        }
+
+        .mermaid {
+            background-color: var(--bg-diagram) !important;
+            padding: 1.5rem; border-radius: 14px;
+            box-shadow: var(--shadow);
+            display: flex; justify-content: center;
+            margin: 2rem 0; overflow-x: auto;
+        }
+
+        .fab-top {
+            position: fixed; bottom: 1.75rem; right: 1.75rem;
+            width: 44px; height: 44px; border-radius: 999px;
+            background: var(--primary); color: #fff; border: none;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow); cursor: pointer;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 80;
+        }
+        .fab-top.visible { opacity: 1; pointer-events: auto; }
+        .fab-top:hover { transform: translateY(-2px); }
+
+        .doc-footer {
+            margin-top: 4rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem; color: var(--text-muted);
+            display: flex; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .topbar { padding: 0.8rem 1rem; }
+            .brand-mark span { font-size: 0.9rem; }
+            .pill-btn span.pill-label { display: none; }
+            .doc-wrap { padding: 2.5rem 1.1rem 4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-rail" id="progressRail"></div>
+
+    <header class="topbar">
+        <a href="/docs/" class="brand-mark">
+            <span class="logo-dot"></span>
+            <span>HyperGarage<br><small id="docSubtitle">Documentation</small></span>
+        </a>
+        <div class="topbar-actions">
+            <a class="pill-btn" href="/docs/"><i class="fa-solid fa-house"></i> <span class="pill-label">หน้าหลัก</span></a>
+            <button class="pill-btn" id="tocBtn"><i class="fa-solid fa-list-ul"></i> <span class="pill-label">สารบัญ</span></button>
+            <button class="icon-btn" id="themeToggle" title="สลับธีม สว่าง/มืด"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="toc-scrim" id="tocScrim"></div>
+    <nav class="toc-drawer" id="tocDrawer">
+        <div class="toc-drawer-head">
+            <h2>สารบัญเอกสาร</h2>
+            <button class="icon-btn" id="tocClose"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="toc-list" id="tableOfContents">
+            <div style="padding: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">กำลังโหลดสารบัญ...</div>
+        </div>
+    </nav>
+
+    <main class="doc-wrap">
+        <article class="markdown-body" id="MDContent">
+            <p style="text-align: center; padding: 2rem;">
+                <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+                <br><br>กำลังโหลดเอกสาร...
+            </p>
+        </article>
+        <div class="doc-footer">
+            <span>HyperGarage &mdash; CSI 204 Project Documentation</span>
+            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
+        </div>
+    </main>
+
+    <button class="fab-top" id="fabTop" title="กลับขึ้นบนสุด"><i class="fa-solid fa-arrow-up"></i></button>
+
+    <script>
+        const DOC_MAP = {
+            'analysis': { file: 'analysis.md', subtitle: 'System Analysis', title: 'การวิเคราะห์ระบบ' },
+            'design': { file: 'design.md', subtitle: 'System Design', title: 'การออกแบบระบบ' },
+            'development': { file: 'development.md', subtitle: 'Development & Testing', title: 'การพัฒนาและทดสอบ' },
+            'architecture': { file: 'architecture.md', subtitle: 'System Architecture', title: 'สถาปัตยกรรมระบบ' },
+            'use-case': { file: 'use-case.md', subtitle: 'Use Case Diagram', title: 'แผนภาพ Use Case' },
+            'class-diagram': { file: 'class-diagram.md', subtitle: 'Class Diagram', title: 'แผนภาพคลาส' },
+            'testing': { file: 'testing.md', subtitle: 'API & Load Testing', title: 'การทดสอบ API' },
+            'sla': { file: 'sla.md', subtitle: 'Service Level Agreement', title: 'ข้อตกลงระดับการให้บริการ' },
+            'uat': { file: 'uat.md', subtitle: 'User Acceptance Testing', title: 'การทดสอบ UAT' },
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const docKey = params.get('page') || 'analysis';
+        const docInfo = DOC_MAP[docKey];
+
+        if (docInfo) {
+            document.getElementById('docSubtitle').textContent = docInfo.subtitle;
+            document.title = `HyperGarage — ${docInfo.title}`;
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const tocBtn = document.getElementById('tocBtn');
+        const tocClose = document.getElementById('tocClose');
+        const tocScrim = document.getElementById('tocScrim');
+        const tocDrawer = document.getElementById('tocDrawer');
+        const tableOfContents = document.getElementById('tableOfContents');
+        const progressRail = document.getElementById('progressRail');
+        const fabTop = document.getElementById('fabTop');
+
+        function openTOC() { tocScrim.classList.add('open'); tocDrawer.classList.add('open'); }
+        function closeTOC() { tocScrim.classList.remove('open'); tocDrawer.classList.remove('open'); }
+        tocBtn.addEventListener('click', openTOC);
+        tocClose.addEventListener('click', closeTOC);
+        tocScrim.addEventListener('click', closeTOC);
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressRail.style.width = pct + '%';
+            fabTop.classList.toggle('visible', scrollTop > 600);
+        });
+        fabTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        themeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                html.classList.add('dark', 'dark-mode-vars');
+                themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
+                localStorage.setItem('docs-theme', 'dark');
+            } else {
+                html.classList.remove('dark', 'dark-mode-vars');
+                html.classList.add('light');
+                themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('docs-theme', 'light');
+            }
+            setTimeout(renderMermaidDiagrams, 50);
+        });
+
+        const savedTheme = localStorage.getItem('docs-theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.remove('light');
+            document.documentElement.classList.add('dark', 'dark-mode-vars');
+            themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
+        }
+
+        if (!docInfo) {
+            document.getElementById('MDContent').innerHTML = '<h1>ไม่พบเอกสาร</h1><p>เอกสารที่ร้องขอไม่มีในระบบ</p>';
+        } else {
+            fetch('/docs/' + docInfo.file)
+                .then(r => { if (!r.ok) throw new Error('ไม่สามารถโหลดไฟล์ได้'); return r.text(); })
+                .then(md => {
+                    marked.setOptions({ headerIds: true, gfm: true, breaks: true });
+                    const mdContainer = document.getElementById('MDContent');
+                    mdContainer.innerHTML = marked.parse(md);
+
+                    const codeBlocks = mdContainer.querySelectorAll('pre code.language-mermaid');
+                    codeBlocks.forEach(codeBlock => {
+                        const preElement = codeBlock.parentElement;
+                        const mermaidDiv = document.createElement('div');
+                        mermaidDiv.className = 'mermaid';
+                        mermaidDiv.textContent = codeBlock.textContent;
+                        preElement.replaceWith(mermaidDiv);
+                    });
+
+                    generateTOC(mdContainer);
+                    applyChapterNumerals(mdContainer);
+                    renderMermaidDiagrams();
+                })
+                .catch(err => {
+                    document.getElementById('MDContent').innerHTML = `
+                        <div style="display:flex;gap:0.75rem;background-color:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:1rem 1.25rem;border-radius:8px;margin:1.5rem 0;color:var(--text-main);font-size:0.9rem;">
+                            <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i>
+                            <div><strong>เกิดข้อผิดพลาด:</strong><br>${err.message}</div>
+                        </div>`;
+                });
+        }
+
+        function generateTOC(container) {
+            const headings = container.querySelectorAll('h2, h3');
+            tableOfContents.innerHTML = '';
+            if (headings.length === 0) {
+                tableOfContents.innerHTML = '<div style="padding:0.75rem;font-size:0.85rem;color:var(--text-muted);">ไม่มีหัวข้อ</div>';
+                return;
+            }
+            headings.forEach((heading, idx) => {
+                if (!heading.id) heading.id = 'heading-' + idx;
+                const navLink = document.createElement('a');
+                navLink.href = '#' + heading.id;
+                navLink.textContent = heading.textContent;
+                navLink.className = heading.tagName === 'H3' ? 'toc-h3' : '';
+                navLink.addEventListener('click', () => {
+                    tableOfContents.querySelectorAll('a').forEach(l => l.classList.remove('active'));
+                    navLink.classList.add('active');
+                    closeTOC();
+                });
+                tableOfContents.appendChild(navLink);
+            });
+        }
+
+        function applyChapterNumerals(container) {
+            container.querySelectorAll('h2').forEach(h2 => {
+                const match = h2.textContent.match(/^(\d+)\.\s*(.+)$/);
+                if (!match) return;
+                h2.innerHTML = `<span class="chapter-num">${match[1].padStart(2, '0')}</span><span class="chapter-title">${match[2]}</span>`;
+                h2.classList.add('chapter-heading');
+            });
+            container.querySelectorAll('h3').forEach(h3 => {
+                const match = h3.textContent.match(/^([\d.]+)\s*(.+)$/);
+                if (!match) return;
+                h3.innerHTML = `<span class="chapter-num">${match[1]}</span><span class="chapter-title">${match[2]}</span>`;
+                h3.classList.add('chapter-heading');
+            });
+        }
+
+        function renderMermaidDiagrams() {
+            const mermaidDivs = document.querySelectorAll('.mermaid');
+            if (mermaidDivs.length === 0) return;
+            mermaidDivs.forEach(div => {
+                if (!div.dataset.mermaidSource) div.dataset.mermaidSource = div.textContent;
+            });
+            document.fonts.ready.then(() => {
+                const isDark = document.documentElement.classList.contains('dark');
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: isDark ? 'dark' : 'neutral',
+                    securityLevel: 'loose',
+                    themeVariables: { fontFamily: 'Space Grotesk, sans-serif' }
+                });
+                mermaidDivs.forEach(div => {
+                    div.removeAttribute('data-processed');
+                    div.textContent = div.dataset.mermaidSource;
+                });
+                mermaid.run({ nodes: mermaidDivs }).catch(err => console.error('Mermaid error:', err));
+            });
+        }
+    </script>
+</body>
+</html>
