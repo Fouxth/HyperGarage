@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HyperGarage — System Requirement Specification (SRS)</title>
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -349,7 +349,7 @@
     <div class="progress-rail" id="progressRail"></div>
 
     <header class="topbar">
-        <a href="/" class="brand-mark">
+        <a href="./" class="brand-mark">
             <span class="logo-dot"></span>
             <span>HyperGarage<br><small>System Requirement Spec</small></span>
         </a>
@@ -379,7 +379,7 @@
         </article>
         <div class="doc-footer">
             <span>HyperGarage &mdash; เอกสารภายในสำหรับการพัฒนา</span>
-            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
+            <a href="./" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
         </div>
     </main>
 
@@ -436,7 +436,7 @@
             themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
         }
 
-        fetch('/SRS.md')
+        fetch('./SRS.md')
             .then(response => {
                 if (!response.ok) throw new Error('ไม่สามารถโหลดไฟล์ SRS.md ได้');
                 return response.text();

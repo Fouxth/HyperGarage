@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HyperGarage — Documentation</title>
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -286,12 +286,12 @@
     <div class="progress-rail" id="progressRail"></div>
 
     <header class="topbar">
-        <a href="/docs/" class="brand-mark">
+        <a href="./" class="brand-mark">
             <span class="logo-dot"></span>
             <span>HyperGarage<br><small id="docSubtitle">Documentation</small></span>
         </a>
         <div class="topbar-actions">
-            <a class="pill-btn" href="/docs/"><i class="fa-solid fa-house"></i> <span class="pill-label">หน้าหลัก</span></a>
+            <a class="pill-btn" href="./"><i class="fa-solid fa-house"></i> <span class="pill-label">หน้าหลัก</span></a>
             <button class="pill-btn" id="tocBtn"><i class="fa-solid fa-list-ul"></i> <span class="pill-label">สารบัญ</span></button>
             <button class="icon-btn" id="themeToggle" title="สลับธีม สว่าง/มืด"><i class="fa-solid fa-moon"></i></button>
         </div>
@@ -317,7 +317,7 @@
         </article>
         <div class="doc-footer">
             <span>HyperGarage &mdash; CSI 204 Project Documentation</span>
-            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
+            <a href="../" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
         </div>
     </main>
 
@@ -395,7 +395,7 @@
         if (!docInfo) {
             document.getElementById('MDContent').innerHTML = '<h1>ไม่พบเอกสาร</h1><p>เอกสารที่ร้องขอไม่มีในระบบ</p>';
         } else {
-            fetch('/docs/' + docInfo.file)
+            fetch('./' + docInfo.file)
                 .then(r => { if (!r.ok) throw new Error('ไม่สามารถโหลดไฟล์ได้'); return r.text(); })
                 .then(md => {
                     marked.setOptions({ headerIds: true, gfm: true, breaks: true });
