@@ -15,7 +15,7 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <WishlistProvider>
-          <BrowserRouter>
+          <BrowserRouter basename="/HyperGarage">
             <App />
           </BrowserRouter>
         </WishlistProvider>
