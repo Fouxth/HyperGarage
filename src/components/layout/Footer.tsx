@@ -26,10 +26,10 @@ const supportLinks = [
 ];
 
 const legalLinks = [
-  { to: '/privacy', label: 'footer.privacy' },
-  { to: '/terms', label: 'footer.terms' },
-  { to: '/cookies', label: 'footer.cookies' },
-  { to: '/warranty', label: 'footer.warranty' },
+  { to: '/legal/privacy', label: 'footer.privacy' },
+  { to: '/legal/terms', label: 'footer.terms' },
+  { to: '/legal/cookies', label: 'footer.cookies' },
+  { to: '/legal/warranty', label: 'footer.warranty' },
 ];
 
 const socialLinks = [
@@ -113,16 +113,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a
-                  href="/srs.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted hover:text-white transition-colors"
-                >
-                  เอกสาร SRS
-                </a>
-              </li>
             </ul>
           </div>
 
