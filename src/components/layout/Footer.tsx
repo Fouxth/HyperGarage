@@ -113,6 +113,16 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a
+                  href="/srs.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted hover:text-white transition-colors"
+                >
+                  เอกสาร SRS
+                </a>
+              </li>
             </ul>
           </div>
 

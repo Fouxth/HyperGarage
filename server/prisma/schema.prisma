@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  nameEn    String
+  slug      String    @unique
+  icon      String
+  image     String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logo      String?
+  country   String
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id            String                 @id @default(cuid())
+  name          String
+  nameEn        String
+  slug          String                 @unique
+  price         Int
+  originalPrice Int?
+  discount      Int?
+  images        String[]
+  sku           String                 @unique
+  stock         Int                    @default(0)
+  rating        Float                  @default(0)
+  reviewCount   Int                    @default(0)
+  description   String
+  specs         Json
+  tags          String[]
+  isNew         Boolean                @default(false)
+  isFeatured    Boolean                @default(false)
+  isFlashSale   Boolean                @default(false)
+  flashSaleEnd  DateTime?
+  brandId       String
+  brand         Brand                  @relation(fields: [brandId], references: [id])
+  categoryId    String
+  category      Category               @relation(fields: [categoryId], references: [id])
+  compatibility ProductCompatibility[]
+  reviews       Review[]
+  orderItems    OrderItem[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+}
+
+model ProductCompatibility {
+  id         String  @id @default(cuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  brand      String
+  model      String
+  generation String
+  years      String
+  engine     String
+}
+
+model VehicleBrand {
+  id     String         @id @default(cuid())
+  name   String         @unique
+  models VehicleModel[]
+}
+
+model VehicleModel {
+  id            String              @id @default(cuid())
+  name          String
+  vehicleBrandId String
+  vehicleBrand  VehicleBrand        @relation(fields: [vehicleBrandId], references: [id], onDelete: Cascade)
+  generations   VehicleGeneration[]
+}
+
+model VehicleGeneration {
+  id             String       @id @default(cuid())
+  name           String
+  years          String
+  engines        String[]
+  vehicleModelId String
+  vehicleModel   VehicleModel @relation(fields: [vehicleModelId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customer        String
+  phone           String
+  total           Int
+  status          OrderStatus @default(pending)
+  paymentMethod   String
+  paymentStatus   PaymentStatus @default(pending)
+  shippingAddress String
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+}
+
+model Coupon {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  type       CouponType
+  value      Int
+  active     Boolean  @default(true)
+  usageLimit Int?
+  usedCount  Int      @default(0)
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+}
+
+enum CouponType {
+  percent
+  fixed
+}
+
+model StoreSettings {
+  id            String   @id @default("singleton")
+  storeName     String   @default("HyperGarage")
+  contactEmail  String   @default("")
+  contactPhone  String   @default("")
+  address       String   @default("")
+  currency      String   @default("THB")
+  maintenanceMode Boolean @default(false)
+  updatedAt     DateTime @updatedAt
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  priceEach  Int
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userName  String
+  rating    Int
+  comment   String
+  images    String[]
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  refunded
+}
