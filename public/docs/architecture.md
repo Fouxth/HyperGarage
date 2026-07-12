@@ -1,6 +1,10 @@
-# System Architecture
+# CSI 204 Workshop 1
 
-## แผนภาพสถาปัตยกรรมระบบ HyperGarage
+> **65007912 นายภัทรพิสิฏ ทองเกิด** | กลุ่ม T002
+
+---
+
+## System Architecture
 
 ```mermaid
 graph TB

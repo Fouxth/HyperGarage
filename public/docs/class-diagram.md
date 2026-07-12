@@ -1,6 +1,10 @@
-# Class Diagram
+# CSI 204 Workshop 2
 
-## แผนภาพคลาส ระบบ HyperGarage
+> **65007912 นายภัทรพิสิฏ ทองเกิด** | กลุ่ม T002
+
+---
+
+## Class Diagram
 
 ```mermaid
 classDiagram
