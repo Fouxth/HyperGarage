@@ -1,4 +1,10 @@
-# การทดสอบ API และ Load Testing
+# CSI 204 Workshop 3
+
+> **65007912 นายภัทรพิสิฏ ทองเกิด** | กลุ่ม T002
+
+---
+
+## การทดสอบ API และ Load Testing
 
 ## Lab #1: การทดสอบ API ด้วย Bruno
 

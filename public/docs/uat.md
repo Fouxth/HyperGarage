@@ -1,5 +1,10 @@
-# การออกแบบและดำเนินการทดสอบ User Acceptance Testing (UAT)
-# HyperGarage E-Commerce Platform
+# CSI 204 Workshop 7
+
+> **65007912 นายภัทรพิสิฏ ทองเกิด** | กลุ่ม T002
+
+---
+
+## การออกแบบและดำเนินการทดสอบ User Acceptance Testing (UAT) - HyperGarage E-Commerce Platform
 
 เอกสารการออกแบบ Test Case สำหรับ User Acceptance Testing อ้างอิงจาก Persona และ Requirement ของระบบ HyperGarage เพื่อยืนยันว่าระบบสามารถตอบสนองความต้องการของผู้ใช้งานแต่ละกลุ่มได้อย่างถูกต้อง
 
