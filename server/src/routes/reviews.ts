@@ -29,31 +29,43 @@ reviewsRouter.post('/', async (req, res) => {
     return
   }
 
-  const review = await prisma.$transaction(async (tx) => {
-    const created = await tx.review.create({
-      data: { productId, userName, rating: Number(rating), comment, images: images ?? [] },
-    })
-    const agg = await tx.review.aggregate({
-      where: { productId },
-      _avg: { rating: true },
-      _count: true,
-    })
-    await tx.product.update({
+  try {
+    const productExists = await prisma.product.findUnique({
       where: { id: productId },
-      data: { rating: agg._avg.rating ?? 0, reviewCount: agg._count },
     })
-    return created
-  })
+    if (!productExists) {
+      res.status(400).json({ error: `Product ${productId} not found` })
+      return
+    }
 
-  res.status(201).json({
-    id: review.id,
-    productId: review.productId,
-    userName: review.userName,
-    rating: review.rating,
-    comment: review.comment,
-    images: review.images,
-    createdAt: review.createdAt.toISOString(),
-  })
+    const review = await prisma.$transaction(async (tx) => {
+      const created = await tx.review.create({
+        data: { productId, userName, rating: Number(rating), comment, images: images ?? [] },
+      })
+      const agg = await tx.review.aggregate({
+        where: { productId },
+        _avg: { rating: true },
+        _count: true,
+      })
+      await tx.product.update({
+        where: { id: productId },
+        data: { rating: agg._avg.rating ?? 0, reviewCount: agg._count },
+      })
+      return created
+    })
+
+    res.status(201).json({
+      id: review.id,
+      productId: review.productId,
+      userName: review.userName,
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images,
+      createdAt: review.createdAt.toISOString(),
+    })
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Review creation failed' })
+  }
 })
 
 reviewsRouter.get('/recent', async (req, res) => {
