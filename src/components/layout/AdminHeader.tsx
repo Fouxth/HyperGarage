@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -17,9 +18,28 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationCount = 5; // TODO: wire to notification state
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    const rawUser = localStorage.getItem('hypergarage_admin_user');
+    if (rawUser) {
+      try {
+        setUser(JSON.parse(rawUser));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('hypergarage_admin_token');
+    localStorage.removeItem('hypergarage_admin_user');
+    navigate('/admin/login');
+  };
 
   const toggleLanguage = () => {
     const next = i18n.language === 'th' ? 'en' : 'th';
@@ -96,10 +116,10 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
               className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
             >
               <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                A
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
               </div>
               <span className="hidden sm:block text-sm font-medium text-white">
-                Admin
+                {user?.name || 'Admin'}
               </span>
               <ChevronDown
                 className={`hidden sm:block w-3.5 h-3.5 text-muted transition-transform ${
@@ -118,8 +138,8 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
                 >
                   <div className="px-4 py-3 border-b border-border">
-                    <p className="text-sm font-medium text-white">Admin User</p>
-                    <p className="text-xs text-muted">admin@hypergarage.com</p>
+                    <p className="text-sm font-medium text-white">{user?.name || 'Admin User'}</p>
+                    <p className="text-xs text-muted">{user?.email || 'admin@hypergarage.com'}</p>
                   </div>
                   <div className="py-1">
                     <button
@@ -138,6 +158,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                     </button>
                     <button
                       type="button"
+                      onClick={handleLogout}
                       className="flex items-center gap-3 w-full px-4 py-2 text-sm text-primary hover:bg-white/5 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
