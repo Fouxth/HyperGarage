@@ -10,7 +10,7 @@
 
 ### Test Case 1: GET /api/products
 
-**Endpoint:** `http://localhost:4000/api/products`  
+**Endpoint:** `https://hyper-garage.duckdns.org/api/products`  
 **Method:** GET  
 ใช้ดึงข้อมูลรายการสินค้าจากเซิร์ฟเวอร์ในรูปแบบ JSON หากสำเร็จจะแสดงสถานะ 200 OK
 
@@ -48,7 +48,7 @@ test("Response time is less than 2000ms", function() {
 
 ### Test Case 2: POST /api/orders (สร้างคำสั่งซื้อ)
 
-**Endpoint:** `http://localhost:4000/api/orders`  
+**Endpoint:** `https://hyper-garage.duckdns.org/api/orders`  
 **Method:** POST  
 **Body (JSON):**
 ```json
@@ -96,7 +96,7 @@ test("Response time is less than 2000ms", function() {
 
 ### Test Case 3: GET /api/products with Compatibility Filter
 
-**Endpoint:** `http://localhost:4000/api/products?vehicleBrand=Honda&vehicleModel=Civic&vehicleEngine=B16A`  
+**Endpoint:** `https://hyper-garage.duckdns.org/api/products?vehicleBrand=Honda&vehicleModel=Civic&vehicleEngine=B16A`  
 **Method:** GET  
 ทดสอบระบบ Compatibility Checker โดยกรองสินค้าที่ใช้กับ Honda Civic B16A
 
@@ -121,7 +121,7 @@ test("All products should be compatible with B16A", function() {
 
 ### Test Case 4: POST /api/reviews
 
-**Endpoint:** `http://localhost:4000/api/reviews`  
+**Endpoint:** `https://hyper-garage.duckdns.org/api/reviews`  
 **Method:** POST  
 **Body (JSON):**
 ```json
@@ -157,7 +157,7 @@ test("Review should have correct userName", function() {
 ### วิธีการทดสอบ
 
 1. สร้าง Thread Group ใน JMeter
-2. เพิ่ม HTTP Request sampler → `GET http://localhost:4000/api/products`
+2. เพิ่ม HTTP Request sampler → `GET https://hyper-garage.duckdns.org/api/products`
 3. เพิ่ม Summary Report listener
 4. รันทดสอบ 3 รอบ: 10, 50, 100 users
 
@@ -165,7 +165,7 @@ test("Review should have correct userName", function() {
 
 | พารามิเตอร์ | ค่า |
 |------------|-----|
-| Target URL | http://localhost:4000/api/products |
+| Target URL | https://hyper-garage.duckdns.org/api/products |
 | Method | GET |
 | Ramp-up Period | 1 วินาที |
 | Loop Count | 1 |
@@ -208,7 +208,8 @@ test("Review should have correct userName", function() {
 hypergarage-api/
 ├── bruno.json
 ├── environments/
-│   └── Local.bru
+│   ├── Local.bru
+│   └── Production.bru
 ├── Products/
 │   ├── GET All Products.bru
 │   └── GET Products with Compatibility Filter.bru
@@ -232,5 +233,7 @@ hypergarage-api/
 2. Click "Open Collection"
 3. เลือกโฟลเดอร์ `hypergarage-api/`
 4. Collection "HyperGarage API" จะปรากฏในรายการ
-5. เลือก Environment: "Local" (baseUrl = http://localhost:4000/api)
-6. ตรวจสอบว่า backend รันอยู่ที่ `localhost:4000` แล้วกด Run
+5. เลือก Environment:
+   - **Production** (baseUrl = `https://hyper-garage.duckdns.org/api`) เพื่อยิงทดสอบ API จริงออนไลน์ได้ทันทีโดยไม่ต้องรัน backend เอง
+   - **Local** (baseUrl = `http://localhost:4000/api`) หากเปิดรัน Backend บนเครื่องตัวเอง (Localhost)
+6. เลือก Request ที่ต้องการ แล้วกด Send เพื่อทดสอบได้เลยครับ
