@@ -207,6 +207,7 @@ test("Review should have correct userName", function() {
 ```
 hypergarage-api/
 ├── bruno.json
+├── collection.bru
 ├── environments/
 │   ├── Local.bru
 │   └── Production.bru

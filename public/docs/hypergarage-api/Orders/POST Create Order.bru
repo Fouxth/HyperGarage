@@ -29,21 +29,25 @@ body:json {
   }
 }
 
+vars:pre-request {
+  baseUrl: https://hyper-garage.duckdns.org/api
+}
+
 tests {
   test("Status code should be 201", function() {
     expect(res.getStatus()).to.equal(201);
   });
-
+  
   test("Order has orderNumber with HG", function() {
     const data = res.getBody();
     expect(data).to.have.property("orderNumber");
     expect(data.orderNumber).to.include("HG");
   });
-
+  
   test("Order status is pending", function() {
     expect(res.getBody().status).to.equal("pending");
   });
-
+  
   test("Response time < 2000ms", function() {
     expect(res.getResponseTime()).to.be.below(2000);
   });
