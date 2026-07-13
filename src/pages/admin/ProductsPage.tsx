@@ -10,11 +10,12 @@ import {
   useDeleteProduct,
 } from '@/api/hooks'
 import type { AdminProduct, ProductInput } from '@/api/client'
+import { useTranslation } from 'react-i18next'
 
-function getStockStatus(stock: number) {
-  if (stock === 0) return { label: 'Out of Stock', cls: 'bg-error/15 text-error' }
-  if (stock < 10) return { label: 'Low Stock', cls: 'bg-warning/15 text-warning' }
-  return { label: 'In Stock', cls: 'bg-success/15 text-success' }
+function getStockStatus(stock: number, t: any) {
+  if (stock === 0) return { label: t('admin.productsPage.outOfStock'), cls: 'bg-error/15 text-error' }
+  if (stock < 10) return { label: t('admin.productsPage.lowStock'), cls: 'bg-warning/15 text-warning' }
+  return { label: t('admin.productsPage.inStock'), cls: 'bg-success/15 text-success' }
 }
 
 const slugify = (s: string) =>
@@ -97,6 +98,7 @@ function toProductInput(f: FormState): ProductInput {
 }
 
 export default function AdminProductsPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -142,7 +144,7 @@ export default function AdminProductsPage() {
     e.preventDefault()
     setFormError(null)
     if (!form.name || !form.nameEn || !form.sku || !form.price || !form.categoryId || !form.brandId) {
-      setFormError('Please fill in all required fields.')
+      setFormError(t('admin.productsPage.errorRequired'))
       return
     }
     try {
@@ -154,16 +156,16 @@ export default function AdminProductsPage() {
       }
       setModalOpen(false)
     } catch {
-      setFormError('Failed to save product. The slug or SKU may already be in use.')
+      setFormError(t('admin.productsPage.errorFailed'))
     }
   }
 
   const handleDelete = async (p: AdminProduct) => {
-    if (!confirm(`Delete "${p.nameEn}"? This cannot be undone.`)) return
+    if (!confirm(t('admin.productsPage.confirmDelete', { name: p.nameEn }))) return
     try {
       await deleteProduct.mutateAsync(p.id)
     } catch {
-      alert('Could not delete this product — it may be referenced by an existing order.')
+      alert(t('admin.productsPage.errorDelete'))
     }
   }
 
@@ -176,13 +178,13 @@ export default function AdminProductsPage() {
       className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Products</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">{t('admin.productsPage.title')}</h1>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add Product
+          {t('admin.productsPage.addBtn')}
         </button>
       </div>
 
@@ -191,7 +193,7 @@ export default function AdminProductsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
-            placeholder="Search by name or SKU..."
+            placeholder={t('admin.productsPage.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-white placeholder-muted focus:outline-none focus:border-primary/50 transition-colors"
@@ -202,7 +204,7 @@ export default function AdminProductsPage() {
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-white outline-none focus:border-primary/50"
         >
-          <option value="">All categories</option>
+          <option value="">{t('admin.productsPage.allCategories')}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.slug}>
               {c.nameEn}
@@ -211,24 +213,24 @@ export default function AdminProductsPage() {
         </select>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Image</th>
-                <th className="px-5 py-3 text-muted font-medium">Product Name</th>
-                <th className="px-5 py-3 text-muted font-medium">Category</th>
-                <th className="px-5 py-3 text-muted font-medium">Brand</th>
-                <th className="px-5 py-3 text-muted font-medium">Price</th>
-                <th className="px-5 py-3 text-muted font-medium">Stock</th>
-                <th className="px-5 py-3 text-muted font-medium">Status</th>
-                <th className="px-5 py-3 text-muted font-medium">Actions</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.imageCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.nameCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.categoryCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.brandCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.priceCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.stockCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.statusCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.productsPage.actionsCol')}</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((product) => {
-                const status = getStockStatus(product.stock)
+                const status = getStockStatus(product.stock, t)
                 return (
                   <tr
                     key={product.id}
@@ -243,12 +245,12 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-5 py-3">
                       <p className="text-white font-medium">{product.nameEn}</p>
-                      <p className="text-muted text-xs">{product.sku}</p>
+                      <p className="text-muted text-xs font-mono">{product.sku}</p>
                     </td>
                     <td className="px-5 py-3 text-muted-light">{product.category}</td>
                     <td className="px-5 py-3 text-muted-light">{product.brand}</td>
                     <td className="px-5 py-3 text-white font-medium">฿{product.price.toLocaleString()}</td>
-                    <td className="px-5 py-3 text-muted-light">{product.stock}</td>
+                    <td className="px-5 py-3 text-muted-light">{product.stock} ชิ้น</td>
                     <td className="px-5 py-3">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${status.cls}`}>
                         {status.label}
@@ -279,17 +281,17 @@ export default function AdminProductsPage() {
         {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <PackageX className="w-10 h-10 text-muted" />
-            <p className="text-muted text-sm">No products match your filters.</p>
+            <p className="text-muted text-sm">{t('admin.productsPage.noProducts')}</p>
           </div>
         )}
       </div>
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">
-                {editingId ? 'Edit Product' : 'Add Product'}
+                {editingId ? t('admin.productsPage.editTitle') : t('admin.productsPage.addTitle')}
               </h2>
               <button onClick={closeModal} className="text-muted hover:text-white">
                 <X className="w-5 h-5" />
@@ -299,99 +301,99 @@ export default function AdminProductsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Name (Thai) *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.nameThLabel')}</label>
                   <input
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Name (English) *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.nameEnLabel')}</label>
                   <input
                     value={form.nameEn}
                     onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Slug</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.slugLabel')}</label>
                   <input
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="auto-generated if empty"
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    placeholder={t('admin.productsPage.slugPlaceholder')}
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">SKU *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.skuLabel')}</label>
                   <input
                     value={form.sku}
                     onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Price *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.priceLabel')}</label>
                   <input
                     type="number"
                     value={form.price}
                     onChange={(e) => setForm({ ...form, price: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Original Price</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.originalPriceLabel')}</label>
                   <input
                     type="number"
                     value={form.originalPrice}
                     onChange={(e) => setForm({ ...form, originalPrice: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Stock</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.stockLabel')}</label>
                   <input
                     type="number"
                     value={form.stock}
                     onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Category *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.categoryLabel')}</label>
                   <select
                     value={form.categoryId}
                     onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   >
-                    <option value="">Select category</option>
+                    <option value="" className="bg-card text-white">{t('admin.productsPage.selectCategory')}</option>
                     {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
+                      <option key={c.id} value={c.id} className="bg-card text-white">
                         {c.nameEn}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Brand *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.brandLabel')}</label>
                   <select
                     value={form.brandId}
                     onChange={(e) => setForm({ ...form, brandId: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   >
-                    <option value="">Select brand</option>
+                    <option value="" className="bg-card text-white">{t('admin.productsPage.selectBrand')}</option>
                     {brands.map((b) => (
-                      <option key={b.id} value={b.id}>
+                      <option key={b.id} value={b.id} className="bg-card text-white">
                         {b.name}
                       </option>
                     ))}
@@ -400,54 +402,54 @@ export default function AdminProductsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-light">Description</label>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.descriptionLabel')}</label>
                 <textarea
                   rows={3}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-light">
-                  Image URLs (one per line)
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">
+                  {t('admin.productsPage.imagesLabel')}
                 </label>
                 <textarea
                   rows={2}
                   value={form.images}
                   onChange={(e) => setForm({ ...form, images: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-light">Tags (comma-separated)</label>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.productsPage.tagsLabel')}</label>
                 <input
                   value={form.tags}
                   onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                 />
               </div>
 
-              <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 text-sm text-muted-light">
+              <div className="flex items-center gap-6 pt-1">
+                <label className="flex items-center gap-2.5 text-sm text-muted-light cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={form.isFeatured}
                     onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                    className="rounded border-border"
+                    className="rounded border-border bg-bg text-primary focus:ring-0 focus:ring-offset-0 h-4.5 w-4.5"
                   />
-                  Featured
+                  <span>{t('admin.productsPage.featuredLabel')}</span>
                 </label>
-                <label className="flex items-center gap-2 text-sm text-muted-light">
+                <label className="flex items-center gap-2.5 text-sm text-muted-light cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={form.isFlashSale}
                     onChange={(e) => setForm({ ...form, isFlashSale: e.target.checked })}
-                    className="rounded border-border"
+                    className="rounded border-border bg-bg text-primary focus:ring-0 focus:ring-offset-0 h-4.5 w-4.5"
                   />
-                  Flash Sale
+                  <span>{t('admin.productsPage.flashSaleLabel')}</span>
                 </label>
               </div>
 
@@ -459,14 +461,14 @@ export default function AdminProductsPage() {
                   onClick={closeModal}
                   className="px-4 py-2 rounded-lg border border-border text-sm text-muted-light hover:text-white transition-colors"
                 >
-                  Cancel
+                  {t('admin.productsPage.cancelBtn')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors disabled:opacity-50"
                 >
-                  {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Product'}
+                  {saving ? t('admin.productsPage.saving') : editingId ? t('admin.productsPage.saveChangesBtn') : t('admin.productsPage.createBtn')}
                 </button>
               </div>
             </form>

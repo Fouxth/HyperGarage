@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Plus, Trash2, Edit3, X, Ticket } from 'lucide-react'
 import { useCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon } from '@/api/hooks'
 import type { Coupon } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 interface FormState {
   code: string
@@ -16,6 +17,7 @@ interface FormState {
 const emptyForm: FormState = { code: '', type: 'percent', value: '', active: true, usageLimit: '', expiresAt: '' }
 
 export default function CouponsPage() {
+  const { t } = useTranslation()
   const { data: coupons = [], isLoading } = useCoupons()
   const createCoupon = useCreateCoupon()
   const updateCoupon = useUpdateCoupon()
@@ -50,7 +52,7 @@ export default function CouponsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.code || !form.value) {
-      setError('Code and value are required.')
+      setError(t('admin.couponsPage.errorRequired'))
       return
     }
     const input = {
@@ -69,35 +71,35 @@ export default function CouponsPage() {
       }
       setModalOpen(false)
     } catch {
-      setError('Failed to save. Code may already be in use.')
+      setError(t('admin.couponsPage.errorFailed'))
     }
   }
 
   const handleDelete = async (c: Coupon) => {
-    if (!confirm(`Delete coupon "${c.code}"?`)) return
+    if (!confirm(t('admin.couponsPage.confirmDelete', { code: c.code }))) return
     await deleteCoupon.mutateAsync(c.id)
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Coupons</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">{t('admin.couponsPage.title')}</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg transition-colors">
-          <Plus className="w-4 h-4" /> Add Coupon
+          <Plus className="w-4 h-4" /> {t('admin.couponsPage.addBtn')}
         </button>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Code</th>
-                <th className="px-5 py-3 text-muted font-medium">Discount</th>
-                <th className="px-5 py-3 text-muted font-medium">Usage</th>
-                <th className="px-5 py-3 text-muted font-medium">Expires</th>
-                <th className="px-5 py-3 text-muted font-medium">Status</th>
-                <th className="px-5 py-3 text-muted font-medium">Actions</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.codeCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.discountCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.usageCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.expiresCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.statusCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.couponsPage.actionsCol')}</th>
               </tr>
             </thead>
             <tbody>
@@ -106,18 +108,18 @@ export default function CouponsPage() {
                   <td className="px-5 py-3 font-mono font-semibold text-white">{c.code}</td>
                   <td className="px-5 py-3 text-muted-light">{c.type === 'percent' ? `${c.value}%` : `฿${c.value}`}</td>
                   <td className="px-5 py-3 text-muted-light">{c.usedCount}{c.usageLimit ? ` / ${c.usageLimit}` : ''}</td>
-                  <td className="px-5 py-3 text-muted-light">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : '—'}</td>
+                  <td className="px-5 py-3 text-muted-light">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('th-TH') : '—'}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${c.active ? 'bg-success/15 text-success' : 'bg-white/5 text-muted'}`}>
-                      {c.active ? 'Active' : 'Inactive'}
+                      {c.active ? t('admin.couponsPage.active') : t('admin.couponsPage.inactive')}
                     </span>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => openEdit(c)} className="p-1.5 rounded-md hover:bg-bg text-muted hover:text-white">
+                      <button onClick={() => openEdit(c)} className="p-1.5 rounded-md hover:bg-bg text-muted hover:text-white transition-colors">
                         <Edit3 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(c)} className="p-1.5 rounded-md hover:bg-error/10 text-muted hover:text-error">
+                      <button onClick={() => handleDelete(c)} className="p-1.5 rounded-md hover:bg-error/10 text-muted hover:text-error transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -130,59 +132,61 @@ export default function CouponsPage() {
         {!isLoading && coupons.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <Ticket className="w-10 h-10 text-muted" />
-            <p className="text-muted text-sm">No coupons yet.</p>
+            <p className="text-muted text-sm">{t('admin.couponsPage.noCoupons')}</p>
           </div>
         )}
       </div>
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">{editingId ? 'Edit Coupon' : 'Add Coupon'}</h2>
+              <h2 className="text-lg font-semibold text-white">{editingId ? t('admin.couponsPage.editTitle') : t('admin.couponsPage.addTitle')}</h2>
               <button onClick={() => setModalOpen(false)} className="text-muted hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-light">Code *</label>
-                <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary" />
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.couponsPage.codeLabel')}</label>
+                <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Type</label>
-                  <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as 'percent' | 'fixed' })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary">
-                    <option value="percent">Percent %</option>
-                    <option value="fixed">Fixed ฿</option>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.couponsPage.typeLabel')}</label>
+                  <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as 'percent' | 'fixed' })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors">
+                    <option value="percent" className="bg-card text-white">{t('admin.couponsPage.percentOption')}</option>
+                    <option value="fixed" className="bg-card text-white">{t('admin.couponsPage.fixedOption')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Value *</label>
-                  <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary" />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.couponsPage.valueLabel')}</label>
+                  <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Usage limit</label>
-                  <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} placeholder="Unlimited" className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary" />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.couponsPage.limitLabel')}</label>
+                  <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} placeholder={t('admin.couponsPage.unlimited')} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors" />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Expires</label>
-                  <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary" />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.couponsPage.expiresLabel')}</label>
+                  <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors" />
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-sm text-muted-light">
-                <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="rounded border-border" />
-                Active
-              </label>
+              <div className="pt-1">
+                <label className="flex items-center gap-2.5 text-sm text-muted-light cursor-pointer select-none">
+                  <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="rounded border-border bg-bg text-primary focus:ring-0 focus:ring-offset-0 h-4.5 w-4.5" />
+                  <span>{t('admin.couponsPage.activeCheckbox')}</span>
+                </label>
+              </div>
               {error && <p className="text-sm text-error">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-lg border border-border text-sm text-muted-light hover:text-white">
-                  Cancel
+                <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-lg border border-border text-sm text-muted-light hover:text-white transition-colors">
+                  {t('admin.couponsPage.cancelBtn')}
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium">
-                  {editingId ? 'Save Changes' : 'Create Coupon'}
+                <button type="submit" className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors">
+                  {editingId ? t('admin.couponsPage.saveChangesBtn') : t('admin.couponsPage.createBtn')}
                 </button>
               </div>
             </form>

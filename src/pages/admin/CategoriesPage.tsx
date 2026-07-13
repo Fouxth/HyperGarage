@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Plus, Edit3, Trash2, X } from 'lucide-react'
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/api/hooks'
 import type { Category } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -22,6 +23,7 @@ function toFormState(c: Category): FormState {
 }
 
 export default function AdminCategoriesPage() {
+  const { t } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
@@ -50,7 +52,7 @@ export default function AdminCategoriesPage() {
     e.preventDefault()
     setFormError(null)
     if (!form.name || !form.nameEn) {
-      setFormError('Please fill in both name fields.')
+      setFormError(t('admin.categoriesPage.errorRequired'))
       return
     }
     const input = {
@@ -68,16 +70,16 @@ export default function AdminCategoriesPage() {
       }
       setModalOpen(false)
     } catch {
-      setFormError('Failed to save — the slug may already be in use.')
+      setFormError(t('admin.categoriesPage.errorFailed'))
     }
   }
 
   const handleDelete = async (c: Category) => {
-    if (!confirm(`Delete "${c.nameEn}"? This cannot be undone.`)) return
+    if (!confirm(t('admin.categoriesPage.confirmDelete', { name: c.nameEn }))) return
     try {
       await deleteCategory.mutateAsync(c.id)
     } catch {
-      alert('Could not delete — this category still has products assigned to it.')
+      alert(t('admin.categoriesPage.errorDelete'))
     }
   }
 
@@ -90,26 +92,26 @@ export default function AdminCategoriesPage() {
       className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Categories</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">{t('admin.categoriesPage.title')}</h1>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add Category
+          {t('admin.categoriesPage.addBtn')}
         </button>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Image</th>
-                <th className="px-5 py-3 text-muted font-medium">Name</th>
-                <th className="px-5 py-3 text-muted font-medium">Slug</th>
-                <th className="px-5 py-3 text-muted font-medium">Products</th>
-                <th className="px-5 py-3 text-muted font-medium">Actions</th>
+                <th className="px-5 py-3 text-muted font-medium">รูปภาพ</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.categoriesPage.nameCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.categoriesPage.slugCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.categoriesPage.productsCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.categoriesPage.actionsCol')}</th>
               </tr>
             </thead>
             <tbody>
@@ -125,7 +127,7 @@ export default function AdminCategoriesPage() {
                     <p className="text-muted text-xs">{cat.name}</p>
                   </td>
                   <td className="px-5 py-3 text-muted-light font-mono text-xs">{cat.slug}</td>
-                  <td className="px-5 py-3 text-muted-light">{cat.productCount}</td>
+                  <td className="px-5 py-3 text-muted-light">{cat.productCount} รายการ</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(cat)} className="p-1.5 rounded-md hover:bg-bg transition-colors text-muted hover:text-white">
@@ -142,16 +144,16 @@ export default function AdminCategoriesPage() {
           </table>
         </div>
         {!isLoading && categories.length === 0 && (
-          <p className="text-muted text-sm text-center py-16">No categories yet.</p>
+          <p className="text-muted text-sm text-center py-16">{t('admin.categoriesPage.noCategories')}</p>
         )}
       </div>
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6">
+          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">
-                {editingId ? 'Edit Category' : 'Add Category'}
+                {editingId ? t('admin.categoriesPage.editTitle') : t('admin.categoriesPage.addTitle')}
               </h2>
               <button onClick={() => setModalOpen(false)} className="text-muted hover:text-white">
                 <X className="w-5 h-5" />
@@ -161,49 +163,49 @@ export default function AdminCategoriesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Name (Thai) *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.categoriesPage.nameThLabel')}</label>
                   <input
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Name (English) *</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.categoriesPage.nameEnLabel')}</label>
                   <input
                     value={form.nameEn}
                     onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Slug</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.categoriesPage.slugLabel')}</label>
                   <input
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="auto-generated if empty"
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    placeholder={t('admin.categoriesPage.slugPlaceholder')}
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-light">Icon</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">ไอคอน (Icon)</label>
                   <input
                     value={form.icon}
                     onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-light">Image URL</label>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-light">{t('admin.categoriesPage.imageLabel')}</label>
                 <input
                   value={form.image}
                   onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
                 />
               </div>
 
@@ -215,14 +217,14 @@ export default function AdminCategoriesPage() {
                   onClick={() => setModalOpen(false)}
                   className="px-4 py-2 rounded-lg border border-border text-sm text-muted-light hover:text-white transition-colors"
                 >
-                  Cancel
+                  {t('admin.categoriesPage.cancelBtn')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors disabled:opacity-50"
                 >
-                  {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Category'}
+                  {saving ? t('admin.categoriesPage.saving') : editingId ? t('admin.categoriesPage.saveBtn') : t('admin.categoriesPage.createBtn')}
                 </button>
               </div>
             </form>
