@@ -3,8 +3,17 @@ import { motion } from 'framer-motion'
 import { Search, PackageX, Eye, X } from 'lucide-react'
 import { useOrders, useUpdateOrderStatus } from '@/api/hooks'
 import type { Order } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const statusOptions: Order['status'][] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+
+const statusTranslation: Record<Order['status'], string> = {
+  pending: 'รอชำระเงิน',
+  processing: 'กำลังเตรียมจัดส่ง',
+  shipped: 'จัดส่งแล้ว',
+  delivered: 'ส่งถึงแล้ว',
+  cancelled: 'ยกเลิกคำสั่งซื้อ'
+}
 
 function statusClass(status: Order['status']) {
   switch (status) {
@@ -17,6 +26,7 @@ function statusClass(status: Order['status']) {
 }
 
 export default function AdminOrdersPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [selected, setSelected] = useState<Order | null>(null)
@@ -27,20 +37,45 @@ export default function AdminOrdersPage() {
   })
   const updateStatus = useUpdateOrderStatus()
 
+  const translateMethod = (method: string) => {
+    switch (method.toLowerCase()) {
+      case 'cod':
+      case 'cash on delivery':
+        return 'เก็บปลายทาง'
+      case 'transfer':
+      case 'bank transfer':
+        return 'โอนเงินธนาคาร'
+      case 'card':
+      case 'credit card':
+        return 'บัตรเครดิต'
+      default:
+        return method
+    }
+  }
+
+  const translatePaymentStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending': return 'ยังไม่จ่าย'
+      case 'paid': return 'ชำระแล้ว'
+      case 'refunded': return 'คืนเงินแล้ว'
+      default: return status
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6"
     >
-      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Orders</h1>
+      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">{t('admin.ordersPage.title')}</h1>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
-            placeholder="Search by order number..."
+            placeholder={t('admin.ordersPage.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-white placeholder-muted focus:outline-none focus:border-primary/50 transition-colors"
@@ -51,51 +86,55 @@ export default function AdminOrdersPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-white outline-none focus:border-primary/50"
         >
-          <option value="All">All statuses</option>
+          <option value="All">{t('admin.ordersPage.allStatuses')}</option>
           {statusOptions.map((s) => (
-            <option key={s} value={s} className="capitalize">{s}</option>
+            <option key={s} value={s}>{statusTranslation[s] || s}</option>
           ))}
         </select>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Order #</th>
-                <th className="px-5 py-3 text-muted font-medium">Customer</th>
-                <th className="px-5 py-3 text-muted font-medium">Items</th>
-                <th className="px-5 py-3 text-muted font-medium">Total</th>
-                <th className="px-5 py-3 text-muted font-medium">Payment</th>
-                <th className="px-5 py-3 text-muted font-medium">Status</th>
-                <th className="px-5 py-3 text-muted font-medium">Date</th>
-                <th className="px-5 py-3 text-muted font-medium">Actions</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.orderNumCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.customerCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.itemsCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.totalCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.paymentCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.statusCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.dateCol')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.ordersPage.actionsCol')}</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-border/50 hover:bg-card-hover transition-colors">
-                  <td className="px-5 py-3 font-mono text-white">{order.orderNumber}</td>
+                  <td className="px-5 py-3 font-mono text-white font-semibold">{order.orderNumber}</td>
                   <td className="px-5 py-3">
-                    <p className="text-white">{order.customer}</p>
+                    <p className="text-white font-medium">{order.customer}</p>
                     <p className="text-muted text-xs">{order.phone}</p>
                   </td>
-                  <td className="px-5 py-3 text-muted-light">{order.items.length}</td>
+                  <td className="px-5 py-3 text-muted-light">{order.items.length} รายการ</td>
                   <td className="px-5 py-3 text-white font-medium">฿{order.total.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-muted-light capitalize">{order.paymentMethod} · {order.paymentStatus}</td>
+                  <td className="px-5 py-3 text-muted-light">
+                    {translateMethod(order.paymentMethod)} · <span className={order.paymentStatus === 'paid' ? 'text-green-400 font-medium' : 'text-warning'}>{translatePaymentStatus(order.paymentStatus)}</span>
+                  </td>
                   <td className="px-5 py-3">
                     <select
                       value={order.status}
                       onChange={(e) => updateStatus.mutate({ id: order.id, status: e.target.value as Order['status'] })}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize outline-none ${statusClass(order.status)}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold outline-none ${statusClass(order.status)}`}
                     >
                       {statusOptions.map((s) => (
-                        <option key={s} value={s} className="bg-card text-white">{s}</option>
+                        <option key={s} value={s} className="bg-card text-white">{statusTranslation[s] || s}</option>
                       ))}
                     </select>
                   </td>
-                  <td className="px-5 py-3 text-muted-light">{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-muted-light">
+                    {new Date(order.createdAt).toLocaleDateString('th-TH')}
+                  </td>
                   <td className="px-5 py-3">
                     <button
                       onClick={() => setSelected(order)}
@@ -112,35 +151,35 @@ export default function AdminOrdersPage() {
         {!isLoading && orders.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <PackageX className="w-10 h-10 text-muted" />
-            <p className="text-muted text-sm">No orders match your filters.</p>
+            <p className="text-muted text-sm">{t('admin.ordersPage.noOrdersMatch')}</p>
           </div>
         )}
       </div>
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white font-mono">{selected.orderNumber}</h2>
               <button onClick={() => setSelected(null)} className="text-muted hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-2 text-sm">
-              <p className="text-muted-light">{selected.customer} · {selected.phone}</p>
-              <p className="text-muted-light">{selected.shippingAddress}</p>
+            <div className="space-y-2.5 text-sm">
+              <p className="text-white font-medium">{selected.customer} · <span className="text-muted font-mono">{selected.phone}</span></p>
+              <p className="text-muted-light bg-bg/50 p-3 rounded-lg border border-border/50 leading-relaxed">{selected.shippingAddress}</p>
             </div>
             <div className="mt-4 space-y-2 border-t border-border pt-4">
               {selected.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between text-sm">
-                  <span className="text-white">{item.productName} × {item.quantity}</span>
+                <div key={item.id} className="flex items-center justify-between text-sm py-1">
+                  <span className="text-white">{item.productName} <span className="text-muted text-xs">× {item.quantity}</span></span>
                   <span className="text-muted-light">฿{(item.priceEach * item.quantity).toLocaleString()}</span>
                 </div>
               ))}
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4 font-semibold">
-              <span className="text-white">Total</span>
-              <span className="text-primary">฿{selected.total.toLocaleString()}</span>
+              <span className="text-white">{t('admin.ordersPage.totalLabel')}</span>
+              <span className="text-primary text-lg">฿{selected.total.toLocaleString()}</span>
             </div>
           </div>
         </div>
