@@ -26,9 +26,12 @@ export default function UsersPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Customers</h1>
+      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight flex items-center gap-2">
+        <Users className="w-7 h-7 text-primary" /> รายชื่อลูกค้า (Customers)
+      </h1>
       <p className="text-sm text-muted">
-        HyperGarage uses guest checkout — there's no account/login system, so this list is derived from real order history grouped by phone number.
+        ร้านค้า HyperGarage รองรับระบบสั่งซื้อแบบไม่มีบัญชี (Guest Checkout) 
+        รายชื่อลูกค้าด้านล่างนี้จึงคำนวณและดึงข้อมูลจากการกรอกเบอร์โทรศัพท์สั่งซื้อจริงของลูกค้าโดยระบบอัตโนมัติ
       </p>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -36,21 +39,27 @@ export default function UsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Name</th>
-                <th className="px-5 py-3 text-muted font-medium">Phone</th>
-                <th className="px-5 py-3 text-muted font-medium">Orders</th>
-                <th className="px-5 py-3 text-muted font-medium">Total Spent</th>
-                <th className="px-5 py-3 text-muted font-medium">Last Order</th>
+                <th className="px-5 py-3 text-muted font-medium">ชื่อลูกค้า</th>
+                <th className="px-5 py-3 text-muted font-medium">เบอร์โทรศัพท์ติดต่อ</th>
+                <th className="px-5 py-3 text-muted font-medium">จำนวนออเดอร์</th>
+                <th className="px-5 py-3 text-muted font-medium">ยอดสั่งซื้อสะสม</th>
+                <th className="px-5 py-3 text-muted font-medium">ออเดอร์ล่าสุดเมื่อ</th>
               </tr>
             </thead>
             <tbody>
               {customers.map((c) => (
                 <tr key={c.phone} className="border-b border-border/50 hover:bg-card-hover transition-colors">
                   <td className="px-5 py-3 text-white font-medium">{c.name}</td>
-                  <td className="px-5 py-3 text-muted-light">{c.phone}</td>
-                  <td className="px-5 py-3 text-muted-light">{c.orders}</td>
+                  <td className="px-5 py-3 text-muted-light font-mono">{c.phone}</td>
+                  <td className="px-5 py-3 text-muted-light">{c.orders} ครั้ง</td>
                   <td className="px-5 py-3 text-white font-semibold">฿{c.total.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-muted-light">{new Date(c.lastOrder).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-muted-light">
+                    {new Date(c.lastOrder).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -59,7 +68,7 @@ export default function UsersPage() {
         {!isLoading && customers.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <Users className="w-10 h-10 text-muted" />
-            <p className="text-muted text-sm">No customers yet — no orders have been placed.</p>
+            <p className="text-muted text-sm">ไม่พบประวัติข้อมูลลูกค้า — ยังไม่มีการทำรายการคำสั่งซื้อใด ๆ</p>
           </div>
         )}
       </div>

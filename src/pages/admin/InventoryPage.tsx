@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Minus, Plus, PackageX } from 'lucide-react'
 import { useProducts, useUpdateStock } from '@/api/hooks'
+import { useTranslation } from 'react-i18next'
 
-function getStockStatus(stock: number) {
-  if (stock === 0) return { label: 'Out of Stock', cls: 'bg-error/15 text-error' }
-  if (stock < 10) return { label: 'Low Stock', cls: 'bg-warning/15 text-warning' }
-  return { label: 'In Stock', cls: 'bg-success/15 text-success' }
+function getStockStatus(stock: number, t: any) {
+  if (stock === 0) return { label: t('admin.inventoryPage.outOfStock'), cls: 'bg-error/15 text-error' }
+  if (stock < 10) return { label: t('admin.inventoryPage.lowStock'), cls: 'bg-warning/15 text-warning' }
+  return { label: t('admin.inventoryPage.inStock'), cls: 'bg-success/15 text-success' }
 }
 
 export default function InventoryPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const { data: products = [], isLoading } = useProducts()
   const updateStock = useUpdateStock()
@@ -27,13 +29,13 @@ export default function InventoryPage() {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-bg p-4 md:p-6 lg:p-8 space-y-6"
     >
-      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">Inventory</h1>
+      <h1 className="text-2xl md:text-3xl font-bold gradient-text tracking-tight">{t('admin.inventoryPage.title')}</h1>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
           type="text"
-          placeholder="Search by name or SKU..."
+          placeholder={t('admin.inventoryPage.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-white placeholder-muted focus:outline-none focus:border-primary/50 transition-colors"
@@ -45,16 +47,16 @@ export default function InventoryPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-muted font-medium">Product</th>
-                <th className="px-5 py-3 text-muted font-medium">SKU</th>
-                <th className="px-5 py-3 text-muted font-medium">Stock</th>
-                <th className="px-5 py-3 text-muted font-medium">Status</th>
-                <th className="px-5 py-3 text-muted font-medium">Adjust</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.inventoryPage.productTable')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.inventoryPage.skuTable')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.inventoryPage.stockTable')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.inventoryPage.statusTable')}</th>
+                <th className="px-5 py-3 text-muted font-medium">{t('admin.inventoryPage.adjustTable')}</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((product) => {
-                const status = getStockStatus(product.stock)
+                const status = getStockStatus(product.stock, t)
                 return (
                   <tr key={product.id} className="border-b border-border/50 hover:bg-card-hover transition-colors">
                     <td className="px-5 py-3">
@@ -92,7 +94,7 @@ export default function InventoryPage() {
                           onClick={() => updateStock.mutate({ id: product.id, stock: product.stock + 50 })}
                           className="rounded-md border border-border px-2 py-1 text-xs text-muted-light hover:text-white hover:bg-bg"
                         >
-                          Restock +50
+                          {t('admin.inventoryPage.restock50')}
                         </button>
                       </div>
                     </td>
@@ -105,7 +107,7 @@ export default function InventoryPage() {
         {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <PackageX className="w-10 h-10 text-muted" />
-            <p className="text-muted text-sm">No products match your search.</p>
+            <p className="text-muted text-sm">{t('admin.inventoryPage.noMatch')}</p>
           </div>
         )}
       </div>
