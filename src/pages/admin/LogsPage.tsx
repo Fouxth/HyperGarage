@@ -29,7 +29,7 @@ export default function LogsPage() {
 
       <div className="rounded-xl border border-border bg-card divide-y divide-border/50">
         {events.map((event, i) => {
-          const Icon = iconFor[event.type]
+          const Icon = iconFor[event.type as keyof typeof iconFor] || FileText
           return (
             <div key={i} className="flex items-center gap-3 px-5 py-3">
               <Icon className="h-4 w-4 flex-shrink-0 text-muted" />

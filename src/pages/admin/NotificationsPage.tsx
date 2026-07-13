@@ -29,7 +29,7 @@ export default function NotificationsPage() {
 
       <div className="space-y-2">
         {events.slice(0, 15).map((event, i) => {
-          const Icon = iconFor[event.type]
+          const Icon = iconFor[event.type as keyof typeof iconFor] || Bell
           return (
             <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
