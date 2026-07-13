@@ -10,11 +10,15 @@ get {
   auth: none
 }
 
+vars:pre-request {
+  baseUrl: https://hyper-garage.duckdns.org/api
+}
+
 tests {
   test("Status code should be 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("Should return array", function() {
     expect(res.getBody()).to.be.an("array");
   });
