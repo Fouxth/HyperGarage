@@ -133,19 +133,44 @@ export interface ProductsQuery {
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
+function getHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const token = localStorage.getItem('hypergarage_admin_token')
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return headers
+}
+
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`)
-  if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: getHeaders(),
+  })
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('hypergarage_admin_token')
+      localStorage.removeItem('hypergarage_admin_user')
+      window.location.href = `${import.meta.env.BASE_URL || '/'}admin/login`
+    }
+    throw new Error(`API ${path} failed: ${res.status}`)
+  }
   return res.json()
 }
 
 async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: getHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
-  if (!res.ok) throw new Error(`API ${method} ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('hypergarage_admin_token')
+      localStorage.removeItem('hypergarage_admin_user')
+      window.location.href = `${import.meta.env.BASE_URL || '/'}admin/login`
+    }
+    throw new Error(`API ${method} ${path} failed: ${res.status}`)
+  }
   if (res.status === 204) return undefined as T
   return res.json()
 }

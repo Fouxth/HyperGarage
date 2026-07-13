@@ -99,6 +99,18 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const rawUser = localStorage.getItem('hypergarage_admin_user');
+    if (rawUser) {
+      try {
+        setUser(JSON.parse(rawUser));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
 
   const toggleSection = (title: string) => {
     setCollapsedSections((prev) => {
@@ -140,11 +152,19 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
       <div className="px-5 py-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-            A
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin User</p>
-            <p className="text-xs text-muted truncate">{t('admin.role.superAdmin')}</p>
+            <p className="text-sm font-medium text-white truncate">{user?.name || 'Admin User'}</p>
+            <p className="text-xs text-muted truncate">
+              {user?.role === 'SUPERADMIN'
+                ? t('admin.role.superAdmin')
+                : user?.role === 'STOCK_STAFF'
+                ? 'พนักงานคลังสินค้า'
+                : user?.role === 'ORDER_STAFF'
+                ? 'พนักงานจัดการออเดอร์'
+                : user?.role || t('admin.role.superAdmin')}
+            </p>
           </div>
         </div>
       </div>
