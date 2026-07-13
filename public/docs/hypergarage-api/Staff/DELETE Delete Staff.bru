@@ -1,0 +1,15 @@
+meta {
+  name: DELETE Delete Staff
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/staff/{{staffId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

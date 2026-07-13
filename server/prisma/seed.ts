@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { categories, brands, products, vehicles } from './seed-data.js'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
@@ -90,6 +91,25 @@ async function main() {
         })
       }
     }
+  }
+
+  // Seed initial SuperAdmin
+  const adminEmail = 'admin@hypergarage.com'
+  const adminExists = await prisma.staff.findUnique({
+    where: { email: adminEmail },
+  })
+
+  if (!adminExists) {
+    const hashedPassword = await bcrypt.hash('admin1234', 10)
+    await prisma.staff.create({
+      data: {
+        email: adminEmail,
+        name: 'System Admin',
+        password: hashedPassword,
+        role: 'SUPERADMIN',
+      },
+    })
+    console.log('Seeded default SuperAdmin: admin@hypergarage.com / admin1234')
   }
 
   console.log('Seed complete.')

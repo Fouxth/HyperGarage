@@ -1,7 +1,12 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const statsRouter = Router()
+
+statsRouter.use(authMiddleware)
+statsRouter.use(requireRole(['SUPERADMIN']))
 
 const categoryColors: Record<string, string> = {
   engine: '#22C55E',

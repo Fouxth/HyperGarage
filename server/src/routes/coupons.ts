@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const couponsRouter = Router()
 
@@ -8,7 +10,7 @@ couponsRouter.get('/', async (_req, res) => {
   res.json(coupons)
 })
 
-couponsRouter.post('/', async (req, res) => {
+couponsRouter.post('/', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const coupon = await prisma.coupon.create({
@@ -27,7 +29,7 @@ couponsRouter.post('/', async (req, res) => {
   }
 })
 
-couponsRouter.put('/:id', async (req, res) => {
+couponsRouter.put('/:id', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const coupon = await prisma.coupon.update({
@@ -47,7 +49,7 @@ couponsRouter.put('/:id', async (req, res) => {
   }
 })
 
-couponsRouter.delete('/:id', async (req, res) => {
+couponsRouter.delete('/:id', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
   try {
     await prisma.coupon.delete({ where: { id: req.params.id } })
     res.status(204).end()

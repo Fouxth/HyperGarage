@@ -10,6 +10,9 @@ import { reviewsRouter } from './routes/reviews.js'
 import { statsRouter } from './routes/stats.js'
 import { couponsRouter } from './routes/coupons.js'
 import { settingsRouter } from './routes/settings.js'
+import { authRouter } from './routes/auth.js'
+import { staffRouter } from './routes/staff.js'
+import { uploadRouter } from './routes/upload.js'
 
 const app = express()
 app.use(cors())
@@ -24,6 +27,10 @@ app.use('/api/reviews', reviewsRouter)
 app.use('/api/stats', statsRouter)
 app.use('/api/coupons', couponsRouter)
 app.use('/api/settings', settingsRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/staff', staffRouter)
+app.use('/api/upload', uploadRouter)
+app.use('/uploads', express.static('uploads'))
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

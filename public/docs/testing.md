@@ -222,10 +222,20 @@ hypergarage-api/
 ├── Reviews/
 │   ├── POST Create Review.bru
 │   └── GET Recent Reviews.bru
-└── Stats/
-    ├── GET Dashboard Stats.bru
-    ├── GET Store Settings.bru
-    └── GET Health Check.bru
+├── Stats/
+│   ├── GET Dashboard Stats.bru
+│   ├── GET Store Settings.bru
+│   └── GET Health Check.bru
+├── Auth/
+│   ├── POST Login.bru
+│   └── GET Get Current User.bru
+├── Staff/
+│   ├── GET List Staff.bru
+│   ├── POST Create Staff.bru
+│   ├── PATCH Update Staff.bru
+│   └── DELETE Delete Staff.bru
+└── Upload/
+    └── POST Upload Image.bru
 ```
 
 ### วิธี Import

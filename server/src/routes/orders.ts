@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const ordersRouter = Router()
 
@@ -119,7 +121,7 @@ ordersRouter.post('/', async (req, res) => {
   }
 })
 
-ordersRouter.patch('/:id/status', async (req, res) => {
+ordersRouter.patch('/:id/status', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
   try {
     const order = await prisma.order.update({
       where: { id: req.params.id },

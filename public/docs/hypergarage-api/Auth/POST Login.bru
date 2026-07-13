@@ -1,0 +1,18 @@
+meta {
+  name: POST Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@hypergarage.com",
+    "password": "admin1234"
+  }
+}

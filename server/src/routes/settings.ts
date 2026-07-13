@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const settingsRouter = Router()
 
@@ -15,7 +17,7 @@ settingsRouter.get('/', async (_req, res) => {
   res.json(await getOrCreate())
 })
 
-settingsRouter.put('/', async (req, res) => {
+settingsRouter.put('/', authMiddleware, requireRole(['SUPERADMIN']), async (req, res) => {
   const b = req.body
   const settings = await prisma.storeSettings.upsert({
     where: { id: 'singleton' },
