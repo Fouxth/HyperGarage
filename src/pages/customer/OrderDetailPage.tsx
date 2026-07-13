@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Package } from 'lucide-react'
-import { useOrder } from '@/api/hooks'
+import { CheckCircle2, Package, Landmark, QrCode } from 'lucide-react'
+import { useOrder, useSettings } from '@/api/hooks'
 import { formatPrice } from '@/components/shared/ProductCard'
+import { promptPayQrDataUrl } from '@/lib/promptpay'
 
 const statusLabel: Record<string, string> = {
   pending: 'Pending',
@@ -16,6 +18,25 @@ export default function OrderDetailPage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const { data: order, isLoading } = useOrder(id)
+  const { data: settings } = useSettings()
+  const [qr, setQr] = useState<string | null>(null)
+
+  const showPaymentInstructions =
+    order?.paymentMethod === 'transfer' && order?.paymentStatus === 'pending'
+
+  useEffect(() => {
+    let active = true
+    if (showPaymentInstructions && settings?.promptPayId && order) {
+      promptPayQrDataUrl(settings.promptPayId, order.total).then((url) => {
+        if (active) setQr(url)
+      })
+    } else {
+      setQr(null)
+    }
+    return () => {
+      active = false
+    }
+  }, [showPaymentInstructions, settings?.promptPayId, order])
 
   if (isLoading) {
     return <div className="flex min-h-[60vh] items-center justify-center text-muted">Loading…</div>
@@ -88,6 +109,40 @@ export default function OrderDetailPage() {
             <span className="text-lg font-bold text-primary">{formatPrice(order.total)}</span>
           </div>
         </div>
+
+        {showPaymentInstructions && settings && (
+          <div className="mt-6 rounded-xl border border-primary/40 bg-primary/5 p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+              <Landmark size={16} className="text-primary" /> {t('order.payInstructions', 'Complete your payment')}
+            </h2>
+            <p className="mt-1 text-xs text-muted">
+              {t('order.payPending', 'Your order is reserved. Please transfer the total to complete it.')}
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {(settings.bankName || settings.bankAccountNumber) && (
+                <div className="space-y-1.5 text-sm">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted">{t('cart.bankAccount', 'Bank account')}</div>
+                  {settings.bankName && <p className="text-muted-light">{settings.bankName}</p>}
+                  {settings.bankAccountName && <p className="text-white">{settings.bankAccountName}</p>}
+                  {settings.bankAccountNumber && (
+                    <p className="font-mono text-base font-bold tracking-wider text-primary">{settings.bankAccountNumber}</p>
+                  )}
+                  <p className="pt-1 text-xs text-muted">
+                    {t('order.amountDue', 'Amount due')}: <span className="font-semibold text-white">{formatPrice(order.total)}</span>
+                  </p>
+                </div>
+              )}
+              {qr && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                    <QrCode size={14} /> {t('cart.promptPay', 'PromptPay QR')}
+                  </div>
+                  <img src={qr} alt="PromptPay QR" className="h-40 w-40 rounded-lg bg-white p-2" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 flex justify-center gap-3">
           <Link to="/products" className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-white/5">

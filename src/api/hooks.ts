@@ -57,6 +57,19 @@ export const useUpdateOrderStatus = () => {
   })
 }
 
+export const useUpdatePaymentStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, paymentStatus }: { id: string; paymentStatus: Order['paymentStatus'] }) =>
+      api.updatePaymentStatus(id, paymentStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
+    },
+  })
+}
+
 export const useCoupons = () => useQuery({ queryKey: ['coupons'], queryFn: api.coupons })
 
 export const useCreateCoupon = () => {

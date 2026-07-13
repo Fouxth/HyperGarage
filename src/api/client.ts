@@ -234,6 +234,8 @@ export const api = {
   checkout: (input: CheckoutInput) => send<Order>('POST', '/orders', input),
   updateOrderStatus: (id: string, status: Order['status']) =>
     send<Order>('PATCH', `/orders/${id}/status`, { status }),
+  updatePaymentStatus: (id: string, paymentStatus: Order['paymentStatus']) =>
+    send<Order>('PATCH', `/orders/${id}/payment`, { paymentStatus }),
   dashboardStats: () => get<DashboardStatsResponse>('/stats/dashboard'),
   recentReviews: (limit = 5) => get<RecentReview[]>(`/reviews/recent?limit=${limit}`),
   productReviews: (productId: string) => get<ProductReview[]>(`/reviews?productId=${productId}`),

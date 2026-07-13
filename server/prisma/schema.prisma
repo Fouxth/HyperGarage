@@ -132,6 +132,14 @@ model StoreSettings {
   address       String   @default("")
   currency      String   @default("THB")
   maintenanceMode Boolean @default(false)
+  codEnabled        Boolean @default(true)
+  transferEnabled   Boolean @default(true)
+  cardEnabled       Boolean @default(true)
+  bankName          String  @default("")
+  bankAccountName   String  @default("")
+  bankAccountNumber String  @default("")
+  promptPayId       String  @default("")
+  paymentNote       String  @default("")
   updatedAt     DateTime @updatedAt
 }
 
