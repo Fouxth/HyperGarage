@@ -88,6 +88,14 @@ export interface StoreSettings {
   address: string
   currency: string
   maintenanceMode: boolean
+  codEnabled: boolean
+  transferEnabled: boolean
+  cardEnabled: boolean
+  bankName: string
+  bankAccountName: string
+  bankAccountNumber: string
+  promptPayId: string
+  paymentNote: string
   updatedAt: string
 }
 

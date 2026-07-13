@@ -1,29 +1,78 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingCart, Landmark, QrCode, CreditCard, Truck, Copy, Check } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { useCheckout } from '@/api/hooks'
+import { useCheckout, useSettings } from '@/api/hooks'
 import { formatPrice } from '@/components/shared/ProductCard'
 import { rememberOrderId } from '@/lib/recentOrders'
 import { localizedName } from '@/lib/localize'
+import { promptPayQrDataUrl } from '@/lib/promptpay'
 
 export default function CartPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { items, setQuantity, removeItem, subtotal, clear } = useCart()
   const checkout = useCheckout()
+  const { data: settings } = useSettings()
 
   const [customer, setCustomer] = useState('')
   const [phone, setPhone] = useState('')
   const [shippingAddress, setShippingAddress] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('cod')
+  const [paymentMethod, setPaymentMethod] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [qr, setQr] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const methods = useMemo(() => {
+    const list: { value: string; label: string; icon: typeof Truck }[] = []
+    if (!settings || settings.codEnabled) list.push({ value: 'cod', label: t('cart.cod', 'Cash on Delivery'), icon: Truck })
+    if (!settings || settings.transferEnabled) list.push({ value: 'transfer', label: t('cart.bankTransfer', 'Bank Transfer'), icon: Landmark })
+    if (!settings || settings.cardEnabled) list.push({ value: 'card', label: t('cart.card', 'Credit / Debit Card'), icon: CreditCard })
+    return list
+  }, [settings, t])
+
+  // Pick the first available method once settings load (or the list changes).
+  useEffect(() => {
+    if (methods.length && !methods.some((m) => m.value === paymentMethod)) {
+      setPaymentMethod(methods[0].value)
+    }
+  }, [methods, paymentMethod])
+
+  // Generate the PromptPay QR for the current total when paying by transfer.
+  useEffect(() => {
+    let active = true
+    if (paymentMethod === 'transfer' && settings?.promptPayId) {
+      promptPayQrDataUrl(settings.promptPayId, subtotal).then((url) => {
+        if (active) setQr(url)
+      })
+    } else {
+      setQr(null)
+    }
+    return () => {
+      active = false
+    }
+  }, [paymentMethod, settings?.promptPayId, subtotal])
+
+  const copyAccount = async () => {
+    if (!settings?.bankAccountNumber) return
+    try {
+      await navigator.clipboard.writeText(settings.bankAccountNumber)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
   const handleCheckout = async () => {
     setError(null)
     if (!customer || !phone || !shippingAddress) {
       setError(t('cart.fillAllFields', 'Please fill in all fields'))
+      return
+    }
+    if (!paymentMethod) {
+      setError(t('cart.selectPayment', 'Please select a payment method'))
       return
     }
     try {
@@ -132,21 +181,102 @@ export default function CartPage() {
                 rows={3}
                 className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary"
               />
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-primary"
-              >
-                <option value="cod">{t('cart.cod', 'Cash on Delivery')}</option>
-                <option value="transfer">{t('cart.bankTransfer', 'Bank Transfer')}</option>
-                <option value="card">{t('cart.card', 'Credit Card')}</option>
-              </select>
+
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                  {t('cart.paymentMethod', 'Payment method')}
+                </p>
+                <div className="space-y-2">
+                  {methods.map((m) => {
+                    const Icon = m.icon
+                    const active = paymentMethod === m.value
+                    return (
+                      <button
+                        key={m.value}
+                        type="button"
+                        onClick={() => setPaymentMethod(m.value)}
+                        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
+                          active ? 'border-primary bg-primary/10 text-white' : 'border-border bg-bg text-muted-light hover:border-primary/50'
+                        }`}
+                      >
+                        <Icon size={18} className={active ? 'text-primary' : 'text-muted'} />
+                        <span className="font-medium">{m.label}</span>
+                        <span className={`ml-auto h-3.5 w-3.5 rounded-full border ${active ? 'border-primary bg-primary' : 'border-border'}`} />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Bank transfer / PromptPay details */}
+              {paymentMethod === 'transfer' && settings && (
+                <div className="rounded-lg border border-border bg-bg p-3 text-sm">
+                  {(settings.bankName || settings.bankAccountNumber) && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                        <Landmark size={14} /> {t('cart.bankAccount', 'Bank account')}
+                      </div>
+                      {settings.bankName && <p className="text-muted-light">{settings.bankName}</p>}
+                      {settings.bankAccountName && <p className="text-white">{settings.bankAccountName}</p>}
+                      {settings.bankAccountNumber && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-base font-bold tracking-wider text-primary">{settings.bankAccountNumber}</span>
+                          <button type="button" onClick={copyAccount} className="text-muted hover:text-primary" title={t('cart.copy', 'Copy')}>
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {qr && (
+                    <div className="mt-3 flex flex-col items-center gap-2 border-t border-border pt-3">
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                        <QrCode size={14} /> {t('cart.promptPay', 'PromptPay QR')}
+                      </div>
+                      <img src={qr} alt="PromptPay QR" className="h-40 w-40 rounded-lg bg-white p-2" />
+                      <p className="text-center text-xs text-muted">{t('cart.scanToPay', 'Scan with your banking app to pay')} {formatPrice(subtotal)}</p>
+                    </div>
+                  )}
+                  <p className="mt-3 border-t border-border pt-2 text-xs text-muted">
+                    {t('cart.transferNote', 'After transferring, keep your slip. We will confirm your payment shortly.')}
+                  </p>
+                </div>
+              )}
+
+              {/* Card payment — demo placeholder, no real processing */}
+              {paymentMethod === 'card' && (
+                <div className="rounded-lg border border-dashed border-border bg-bg p-3 text-sm">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                    <CreditCard size={14} /> {t('cart.card', 'Credit / Debit Card')}
+                  </div>
+                  <div className="mt-2 space-y-2 opacity-60">
+                    <div className="rounded-md border border-border bg-card px-3 py-2 font-mono text-muted">•••• •••• •••• ••••</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-md border border-border bg-card px-3 py-2 font-mono text-muted">MM / YY</div>
+                      <div className="rounded-md border border-border bg-card px-3 py-2 font-mono text-muted">CVV</div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-amber-500">
+                    {t('cart.cardDemo', 'Card payment is a demo. No card details are collected or charged — the order is recorded as pending payment.')}
+                  </p>
+                </div>
+              )}
+
+              {paymentMethod === 'cod' && (
+                <div className="rounded-lg border border-border bg-bg p-3 text-xs text-muted">
+                  {t('cart.codNote', 'Pay in cash when your order is delivered.')}
+                </div>
+              )}
             </div>
 
             <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm">
               <span className="text-muted">{t('cart.subtotal', 'Subtotal')}</span>
               <span className="font-bold text-primary">{formatPrice(subtotal)}</span>
             </div>
+
+            {settings?.paymentNote && paymentMethod !== 'cod' && (
+              <p className="mt-2 text-xs text-muted">{settings.paymentNote}</p>
+            )}
 
             {error && <p className="mt-3 text-xs text-primary">{error}</p>}
 

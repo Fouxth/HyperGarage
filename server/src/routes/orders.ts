@@ -69,6 +69,20 @@ ordersRouter.post('/', async (req, res) => {
 
   if (!b.items?.length) return res.status(400).json({ error: 'Cart is empty' })
 
+  const settings = await prisma.storeSettings.upsert({
+    where: { id: 'singleton' },
+    update: {},
+    create: { id: 'singleton' },
+  })
+  const allowedMethods = [
+    settings.codEnabled && 'cod',
+    settings.transferEnabled && 'transfer',
+    settings.cardEnabled && 'card',
+  ].filter(Boolean)
+  if (!allowedMethods.includes(b.paymentMethod)) {
+    return res.status(400).json({ error: 'Payment method not available' })
+  }
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       const products = await tx.product.findMany({
@@ -126,6 +140,23 @@ ordersRouter.patch('/:id/status', authMiddleware, requireRole(['SUPERADMIN', 'OR
     const order = await prisma.order.update({
       where: { id: req.params.id },
       data: { status: req.body.status },
+      include,
+    })
+    res.json(serialize(order))
+  } catch {
+    res.status(404).json({ error: 'Order not found' })
+  }
+})
+
+ordersRouter.patch('/:id/payment', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
+  const allowed = ['pending', 'paid', 'refunded']
+  if (!allowed.includes(req.body.paymentStatus)) {
+    return res.status(400).json({ error: 'Invalid payment status' })
+  }
+  try {
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: { paymentStatus: req.body.paymentStatus },
       include,
     })
     res.json(serialize(order))
