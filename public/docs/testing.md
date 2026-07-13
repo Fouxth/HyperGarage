@@ -195,7 +195,12 @@ test("Review should have correct userName", function() {
 
 ## Bruno Collection (Import ได้เลย)
 
-โฟลเดอร์: `hypergarage-api/` — เปิดด้วย Bruno ได้ทันที
+คุณสามารถนำไฟล์ Bruno Collection ไปใช้ทดสอบได้จาก 2 ช่องทางนี้ครับ:
+
+1. **ดาวน์โหลดเป็นไฟล์ ZIP (สำหรับหน้าเว็บ):**
+   [📥 ดาวน์โหลด hypergarage-api.zip](./hypergarage-api.zip) (หลังจากดาวน์โหลด ให้แตกไฟล์ ZIP แล้วเปิดโฟลเดอร์ด้วยโปรแกรม Bruno)
+2. **คัดลอกจากโฟลเดอร์ในเครื่องคอมพิวเตอร์ของคุณ (Local):**
+   โฟลเดอร์นี้อยู่ในโปรเจกต์ของคุณแล้วที่พาธ `public/docs/hypergarage-api/` สามารถเปิดโปรแกรม Bruno แล้วเลือกเปิดโฟลเดอร์นี้ได้โดยตรงครับ
 
 ### โครงสร้าง Collection
 
