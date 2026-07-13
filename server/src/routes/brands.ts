@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const brandsRouter = Router()
 
@@ -21,7 +23,7 @@ brandsRouter.get('/', async (_req, res) => {
   res.json(brands.map(serialize))
 })
 
-brandsRouter.post('/', async (req, res) => {
+brandsRouter.post('/', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const brand = await prisma.brand.create({
@@ -34,7 +36,7 @@ brandsRouter.post('/', async (req, res) => {
   }
 })
 
-brandsRouter.put('/:id', async (req, res) => {
+brandsRouter.put('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const brand = await prisma.brand.update({
@@ -48,7 +50,7 @@ brandsRouter.put('/:id', async (req, res) => {
   }
 })
 
-brandsRouter.delete('/:id', async (req, res) => {
+brandsRouter.delete('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   try {
     await prisma.brand.delete({ where: { id: req.params.id } })
     res.status(204).end()

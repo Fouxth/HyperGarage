@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const categoriesRouter = Router()
 
@@ -22,7 +24,7 @@ categoriesRouter.get('/', async (_req, res) => {
   res.json(categories.map(serialize))
 })
 
-categoriesRouter.post('/', async (req, res) => {
+categoriesRouter.post('/', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const category = await prisma.category.create({
@@ -35,7 +37,7 @@ categoriesRouter.post('/', async (req, res) => {
   }
 })
 
-categoriesRouter.put('/:id', async (req, res) => {
+categoriesRouter.put('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const category = await prisma.category.update({
@@ -49,7 +51,7 @@ categoriesRouter.put('/:id', async (req, res) => {
   }
 })
 
-categoriesRouter.delete('/:id', async (req, res) => {
+categoriesRouter.delete('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   try {
     await prisma.category.delete({ where: { id: req.params.id } })
     res.status(204).end()

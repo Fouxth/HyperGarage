@@ -169,3 +169,19 @@ enum PaymentStatus {
   paid
   refunded
 }
+
+enum Role {
+  SUPERADMIN
+  STOCK_STAFF
+  ORDER_STAFF
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(SUPERADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

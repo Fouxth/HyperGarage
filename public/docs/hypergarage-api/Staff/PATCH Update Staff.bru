@@ -1,0 +1,21 @@
+meta {
+  name: PATCH Update Staff
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/staff/{{staffId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Updated Staff Name"
+  }
+}

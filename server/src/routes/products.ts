@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../prisma.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const productsRouter = Router()
 
@@ -84,7 +86,7 @@ productsRouter.get('/', async (req, res) => {
   res.json(products.map(serialize))
 })
 
-productsRouter.post('/', async (req, res) => {
+productsRouter.post('/', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   const product = await prisma.product.create({
     data: {
@@ -111,7 +113,7 @@ productsRouter.post('/', async (req, res) => {
   res.status(201).json(serialize(product))
 })
 
-productsRouter.put('/:id', async (req, res) => {
+productsRouter.put('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const product = await prisma.product.update({
@@ -143,7 +145,7 @@ productsRouter.put('/:id', async (req, res) => {
   }
 })
 
-productsRouter.patch('/:id/stock', async (req, res) => {
+productsRouter.patch('/:id/stock', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   try {
     const product = await prisma.product.update({
       where: { id: req.params.id },
@@ -156,7 +158,7 @@ productsRouter.patch('/:id/stock', async (req, res) => {
   }
 })
 
-productsRouter.patch('/:id/flash-sale', async (req, res) => {
+productsRouter.patch('/:id/flash-sale', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   const b = req.body
   try {
     const product = await prisma.product.update({
@@ -174,7 +176,7 @@ productsRouter.patch('/:id/flash-sale', async (req, res) => {
   }
 })
 
-productsRouter.delete('/:id', async (req, res) => {
+productsRouter.delete('/:id', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
   try {
     await prisma.product.delete({ where: { id: req.params.id } })
     res.status(204).end()
