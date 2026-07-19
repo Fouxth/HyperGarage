@@ -38,6 +38,10 @@ const ShippingInfoPage = lazy(() => import('@/pages/customer/ShippingInfoPage'))
 const ReturnsPage = lazy(() => import('@/pages/customer/ReturnsPage'))
 const OrderTrackingPage = lazy(() => import('@/pages/customer/OrderTrackingPage'))
 const ContactPage = lazy(() => import('@/pages/customer/ContactPage'))
+const AccountRegisterPage = lazy(() => import('@/pages/account/RegisterPage'))
+const AccountLoginPage = lazy(() => import('@/pages/account/LoginPage'))
+const MyOrdersPage = lazy(() => import('@/pages/account/MyOrdersPage'))
+const AddressesPage = lazy(() => import('@/pages/account/AddressesPage'))
 const LoginPage = lazy(() => import('@/pages/admin/LoginPage'))
 const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'))
 const AdminProductsPage = lazy(() => import('@/pages/admin/ProductsPage'))
@@ -52,6 +56,7 @@ const UsersPage = lazy(() => import('@/pages/admin/UsersPage'))
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'))
 const PaymentsPage = lazy(() => import('@/pages/admin/PaymentsPage'))
 const ShippingPage = lazy(() => import('@/pages/admin/ShippingPage'))
+const AdminReturnsPage = lazy(() => import('@/pages/admin/ReturnsPage'))
 const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'))
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'))
 const LogsPage = lazy(() => import('@/pages/admin/LogsPage'))
@@ -93,6 +98,10 @@ export default function App() {
           <Route path="returns" element={<ReturnsPage />} />
           <Route path="order-tracking" element={<OrderTrackingPage />} />
           <Route path="contact" element={<ContactPage />} />
+          <Route path="account/register" element={<AccountRegisterPage />} />
+          <Route path="account/login" element={<AccountLoginPage />} />
+          <Route path="account/my-orders" element={<MyOrdersPage />} />
+          <Route path="account/addresses" element={<AddressesPage />} />
         </Route>
         <Route path="admin/login" element={<LoginPage />} />
         <Route path="admin" element={<AdminLayout />}>
@@ -109,6 +118,7 @@ export default function App() {
           <Route path="roles" element={<RolesPage />} />
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="shipping" element={<ShippingPage />} />
+          <Route path="returns" element={<AdminReturnsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="logs" element={<LogsPage />} />

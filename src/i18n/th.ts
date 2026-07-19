@@ -181,6 +181,7 @@ export const th = {
       orders: 'คำสั่งซื้อ',
       payments: 'การชำระเงิน',
       shipping: 'การจัดส่ง',
+      returnsAdmin: 'คืนสินค้า/คืนเงิน',
       marketing: 'การตลาด',
       coupons: 'คูปอง',
       flashSale: 'Flash Sale',

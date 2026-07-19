@@ -10,6 +10,7 @@ const include = {
   brand: true,
   category: true,
   compatibility: true,
+  variants: true,
 } satisfies Prisma.ProductInclude
 
 type ProductWithRelations = Prisma.ProductGetPayload<{ include: typeof include }>
@@ -47,6 +48,14 @@ function serialize(p: ProductWithRelations) {
     isFeatured: p.isFeatured,
     isFlashSale: p.isFlashSale,
     flashSaleEnd: p.flashSaleEnd ?? undefined,
+    variants: p.variants.map((v) => ({
+      id: v.id,
+      name: v.name,
+      sku: v.sku,
+      priceDelta: v.priceDelta,
+      stock: v.stock,
+      image: v.image ?? undefined,
+    })),
   }
 }
 
@@ -192,4 +201,54 @@ productsRouter.get('/:slug', async (req, res) => {
   })
   if (!product) return res.status(404).json({ error: 'Not found' })
   res.json(serialize(product))
+})
+
+productsRouter.post('/:productId/variants', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
+  const b = req.body
+  try {
+    await prisma.productVariant.create({
+      data: {
+        productId: req.params.productId,
+        name: b.name,
+        sku: b.sku,
+        priceDelta: b.priceDelta ?? 0,
+        stock: b.stock ?? 0,
+        image: b.image || null,
+      },
+    })
+    const product = await prisma.product.findUnique({ where: { id: req.params.productId }, include })
+    res.status(201).json(serialize(product!))
+  } catch {
+    res.status(400).json({ error: 'Failed to create variant' })
+  }
+})
+
+productsRouter.patch('/:productId/variants/:variantId', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
+  const b = req.body
+  try {
+    await prisma.productVariant.update({
+      where: { id: req.params.variantId },
+      data: {
+        name: b.name,
+        sku: b.sku,
+        priceDelta: b.priceDelta,
+        stock: b.stock,
+        image: b.image || null,
+      },
+    })
+    const product = await prisma.product.findUnique({ where: { id: req.params.productId }, include })
+    res.json(serialize(product!))
+  } catch {
+    res.status(404).json({ error: 'Variant not found' })
+  }
+})
+
+productsRouter.delete('/:productId/variants/:variantId', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF']), async (req, res) => {
+  try {
+    await prisma.productVariant.delete({ where: { id: req.params.variantId } })
+    const product = await prisma.product.findUnique({ where: { id: req.params.productId }, include })
+    res.json(serialize(product!))
+  } catch {
+    res.status(404).json({ error: 'Variant not found' })
+  }
 })

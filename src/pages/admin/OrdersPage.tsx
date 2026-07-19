@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, PackageX, Eye, X } from 'lucide-react'
-import { useOrders, useUpdateOrderStatus } from '@/api/hooks'
+import { Search, PackageX, Eye, X, Truck, Undo2 } from 'lucide-react'
+import { useOrders, useUpdateOrderStatus, useCreateReturn } from '@/api/hooks'
 import type { Order } from '@/types'
 import { useTranslation } from 'react-i18next'
+
+const carrierLabels: Record<string, string> = {
+  kerry: 'Kerry Express',
+  flash: 'Flash Express',
+  thailand_post: 'Thailand Post (ไปรษณีย์ไทย)',
+}
 
 const statusOptions: Order['status'][] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
 
@@ -30,12 +36,15 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [selected, setSelected] = useState<Order | null>(null)
+  const [returnReason, setReturnReason] = useState('')
+  const [returnSent, setReturnSent] = useState(false)
 
   const { data: orders = [], isLoading } = useOrders({
     status: statusFilter,
     orderNumber: search || undefined,
   })
   const updateStatus = useUpdateOrderStatus()
+  const createReturn = useCreateReturn()
 
   const translateMethod = (method: string) => {
     switch (method.toLowerCase()) {
@@ -137,7 +146,7 @@ export default function AdminOrdersPage() {
                   </td>
                   <td className="px-5 py-3">
                     <button
-                      onClick={() => setSelected(order)}
+                      onClick={() => { setSelected(order); setReturnReason(''); setReturnSent(false) }}
                       className="p-1.5 rounded-md hover:bg-bg transition-colors text-muted hover:text-white"
                     >
                       <Eye className="w-4 h-4" />
@@ -169,10 +178,21 @@ export default function AdminOrdersPage() {
               <p className="text-white font-medium">{selected.customer} · <span className="text-muted font-mono">{selected.phone}</span></p>
               <p className="text-muted-light bg-bg/50 p-3 rounded-lg border border-border/50 leading-relaxed">{selected.shippingAddress}</p>
             </div>
+            {(selected.trackingNumber || selected.carrier) && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-border/50 bg-bg/50 p-3 text-sm">
+                <Truck className="h-4 w-4 flex-shrink-0 text-primary" />
+                <span className="text-muted-light">
+                  {selected.carrier ? carrierLabels[selected.carrier] ?? selected.carrier : 'ยังไม่ระบุขนส่ง'}
+                  {selected.trackingNumber && <> · เลขพัสดุ <span className="font-mono text-white">{selected.trackingNumber}</span></>}
+                </span>
+              </div>
+            )}
             <div className="mt-4 space-y-2 border-t border-border pt-4">
               {selected.items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-sm py-1">
-                  <span className="text-white">{item.productName} <span className="text-muted text-xs">× {item.quantity}</span></span>
+                  <span className="text-white">
+                    {item.productName}{item.variantName ? ` (${item.variantName})` : ''} <span className="text-muted text-xs">× {item.quantity}</span>
+                  </span>
                   <span className="text-muted-light">฿{(item.priceEach * item.quantity).toLocaleString()}</span>
                 </div>
               ))}
@@ -180,6 +200,36 @@ export default function AdminOrdersPage() {
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4 font-semibold">
               <span className="text-white">{t('admin.ordersPage.totalLabel')}</span>
               <span className="text-primary text-lg">฿{selected.total.toLocaleString()}</span>
+            </div>
+
+            <div className="mt-4 border-t border-border pt-4">
+              {returnSent ? (
+                <p className="flex items-center gap-2 text-sm text-emerald-400"><Undo2 size={14} /> ส่งคำขอคืนสินค้าแล้ว ดูสถานะได้ที่หน้าคืนสินค้า</p>
+              ) : (
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-light">
+                    <Undo2 size={13} /> แจ้งคืนสินค้า/คืนเงิน
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      value={returnReason}
+                      onChange={(e) => setReturnReason(e.target.value)}
+                      placeholder="เหตุผลการคืนสินค้า"
+                      className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                    />
+                    <button
+                      disabled={!returnReason || createReturn.isPending}
+                      onClick={async () => {
+                        await createReturn.mutateAsync({ orderId: selected.id, reason: returnReason })
+                        setReturnSent(true)
+                      }}
+                      className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-50"
+                    >
+                      ส่งคำขอ
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

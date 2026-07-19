@@ -1,4 +1,4 @@
-import type { Product, Category, Brand, Vehicle, Order, AdminStats, SalesData, CategorySales, Coupon, StoreSettings, ActivityEvent, ReportsData } from '@/types'
+import type { Product, Category, Brand, Vehicle, Order, AdminStats, SalesData, CategorySales, Coupon, StoreSettings, ActivityEvent, ReportsData, ProductVariant, ReturnRecord, ReturnStatus, AdminCustomer, AppNotification, AuditLogEntry } from '@/types'
 
 interface DashboardStatsResponse {
   stats: AdminStats
@@ -71,7 +71,31 @@ export interface CheckoutInput {
   phone: string
   shippingAddress: string
   paymentMethod: string
-  items: { productId: string; quantity: number }[]
+  items: { productId: string; variantId?: string; quantity: number }[]
+}
+
+export interface VariantInput {
+  name: string
+  sku: string
+  priceDelta?: number
+  stock?: number
+  image?: string | null
+}
+
+export interface ReturnInput {
+  orderId: string
+  reason: string
+}
+
+export interface UpdateReturnStatusInput {
+  status: ReturnStatus
+  refundAmount?: number
+  note?: string
+}
+
+export interface ShippingInput {
+  carrier?: string
+  trackingNumber?: string
 }
 
 export interface CouponInput {
@@ -231,7 +255,14 @@ export const api = {
     return get<Order[]>(`/orders${query ? `?${query}` : ''}`)
   },
   order: (id: string) => get<Order>(`/orders/${id}`),
-  checkout: (input: CheckoutInput) => send<Order>('POST', '/orders', input),
+  checkout: async (input: CheckoutInput) => {
+    const customerToken = localStorage.getItem('hypergarage_customer_token')
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (customerToken) headers['Authorization'] = `Bearer ${customerToken}`
+    const res = await fetch(`${API_BASE}/orders`, { method: 'POST', headers, body: JSON.stringify(input) })
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `API POST /orders failed: ${res.status}`)
+    return res.json() as Promise<Order>
+  },
   updateOrderStatus: (id: string, status: Order['status']) =>
     send<Order>('PATCH', `/orders/${id}/status`, { status }),
   updatePaymentStatus: (id: string, paymentStatus: Order['paymentStatus']) =>
@@ -248,4 +279,34 @@ export const api = {
   updateSettings: (input: Partial<StoreSettings>) => send<StoreSettings>('PUT', '/settings', input),
   activity: () => get<ActivityEvent[]>('/stats/activity'),
   reports: () => get<ReportsData>('/stats/reports'),
+  updateShipping: (id: string, input: ShippingInput) => send<Order>('PATCH', `/orders/${id}/shipping`, input),
+  createVariant: (productId: string, input: VariantInput) => send<AdminProduct>('POST', `/products/${productId}/variants`, input),
+  updateVariant: (productId: string, variantId: string, input: VariantInput) =>
+    send<AdminProduct>('PATCH', `/products/${productId}/variants/${variantId}`, input),
+  deleteVariant: (productId: string, variantId: string) =>
+    send<AdminProduct>('DELETE', `/products/${productId}/variants/${variantId}`),
+  returns: (status?: string) => get<ReturnRecord[]>(`/returns${status && status !== 'All' ? `?status=${status}` : ''}`),
+  createReturn: (input: ReturnInput) => send<ReturnRecord>('POST', '/returns', input),
+  updateReturnStatus: (id: string, input: UpdateReturnStatusInput) =>
+    send<ReturnRecord>('PATCH', `/returns/${id}/status`, input),
+  customers: () => get<AdminCustomer[]>('/customers'),
+  updateCustomer: (id: string, input: { name?: string; phone?: string; banned?: boolean }) =>
+    send<AdminCustomer>('PATCH', `/customers/${id}`, input),
+  notifications: (read?: boolean) => get<AppNotification[]>(`/notifications${read !== undefined ? `?read=${read}` : ''}`),
+  markNotificationRead: (id: string) => send<{ id: string; read: boolean }>('PATCH', `/notifications/${id}/read`),
+  markAllNotificationsRead: () => send<{ ok: boolean }>('PATCH', '/notifications/mark-all-read'),
+  auditLog: (params?: { entity?: string; action?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.entity) qs.set('entity', params.entity)
+    if (params?.action) qs.set('action', params.action)
+    const query = qs.toString()
+    return get<AuditLogEntry[]>(`/audit${query ? `?${query}` : ''}`)
+  },
+  backupExport: async () => {
+    const res = await fetch(`${API_BASE}/backup/export`, { headers: getHeaders() })
+    if (!res.ok) throw new Error(`Backup export failed: ${res.status}`)
+    return res.blob()
+  },
 }
+
+export type { ProductVariant }

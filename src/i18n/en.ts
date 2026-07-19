@@ -181,6 +181,7 @@ export const en = {
       orders: 'Orders',
       payments: 'Payments',
       shipping: 'Shipping',
+      returnsAdmin: 'Returns/Refunds',
       marketing: 'Marketing',
       coupons: 'Coupons',
       flashSale: 'Flash Sale',

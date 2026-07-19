@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Search, Edit3, Trash2, X, PackageX } from 'lucide-react'
+import { Plus, Search, Edit3, Trash2, X, PackageX, Save } from 'lucide-react'
 import {
   useProducts,
   useCategories,
@@ -8,9 +8,108 @@ import {
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
+  useCreateVariant,
+  useUpdateVariant,
+  useDeleteVariant,
 } from '@/api/hooks'
 import type { AdminProduct, ProductInput } from '@/api/client'
+import type { ProductVariant } from '@/types'
 import { useTranslation } from 'react-i18next'
+
+function VariantEditor({ product }: { product: AdminProduct }) {
+  const createVariant = useCreateVariant()
+  const updateVariant = useUpdateVariant()
+  const deleteVariant = useDeleteVariant()
+  const [newVariant, setNewVariant] = useState({ name: '', sku: '', priceDelta: '0', stock: '0' })
+
+  const handleAdd = async () => {
+    if (!newVariant.name || !newVariant.sku) return
+    await createVariant.mutateAsync({
+      productId: product.id,
+      input: {
+        name: newVariant.name,
+        sku: newVariant.sku,
+        priceDelta: Number(newVariant.priceDelta) || 0,
+        stock: Number(newVariant.stock) || 0,
+      },
+    })
+    setNewVariant({ name: '', sku: '', priceDelta: '0', stock: '0' })
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-bg/30 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-light">ตัวเลือกสินค้า (สี/ไซส์)</p>
+      {product.variants.map((v) => (
+        <VariantRow key={v.id} productId={product.id} variant={v} onDelete={() => deleteVariant.mutate({ productId: product.id, variantId: v.id })} onSave={(input) => updateVariant.mutate({ productId: product.id, variantId: v.id, input })} />
+      ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={newVariant.name}
+          onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+          placeholder="ชื่อตัวเลือก เช่น แดง / L"
+          className="flex-1 min-w-[120px] rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+        />
+        <input
+          value={newVariant.sku}
+          onChange={(e) => setNewVariant({ ...newVariant, sku: e.target.value })}
+          placeholder="SKU"
+          className="w-24 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+        />
+        <input
+          type="number"
+          value={newVariant.priceDelta}
+          onChange={(e) => setNewVariant({ ...newVariant, priceDelta: e.target.value })}
+          placeholder="ส่วนต่างราคา"
+          className="w-24 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+        />
+        <input
+          type="number"
+          value={newVariant.stock}
+          onChange={(e) => setNewVariant({ ...newVariant, stock: e.target.value })}
+          placeholder="สต็อก"
+          className="w-20 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={createVariant.isPending}
+          className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-hover disabled:opacity-50"
+        >
+          <Plus size={13} /> เพิ่ม
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function VariantRow({ variant, onDelete, onSave }: { productId: string; variant: ProductVariant; onDelete: () => void; onSave: (input: { name: string; sku: string; priceDelta: number; stock: number }) => void }) {
+  const [name, setName] = useState(variant.name)
+  const [sku, setSku] = useState(variant.sku)
+  const [priceDelta, setPriceDelta] = useState(String(variant.priceDelta))
+  const [stock, setStock] = useState(String(variant.stock))
+  const dirty = name !== variant.name || sku !== variant.sku || priceDelta !== String(variant.priceDelta) || stock !== String(variant.stock)
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input value={name} onChange={(e) => setName(e.target.value)} className="flex-1 min-w-[120px] rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary" />
+      <input value={sku} onChange={(e) => setSku(e.target.value)} className="w-24 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary" />
+      <input type="number" value={priceDelta} onChange={(e) => setPriceDelta(e.target.value)} className="w-24 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary" />
+      <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} className="w-20 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-white outline-none focus:border-primary" />
+      {dirty && (
+        <button
+          type="button"
+          onClick={() => onSave({ name, sku, priceDelta: Number(priceDelta) || 0, stock: Number(stock) || 0 })}
+          className="rounded-lg border border-border p-1.5 text-primary hover:bg-primary/10"
+        >
+          <Save size={14} />
+        </button>
+      )}
+      <button type="button" onClick={onDelete} className="rounded-lg border border-border p-1.5 text-muted-light hover:text-error">
+        <Trash2 size={14} />
+      </button>
+    </div>
+  )
+}
 
 function getStockStatus(stock: number, t: any) {
   if (stock === 0) return { label: t('admin.productsPage.outOfStock'), cls: 'bg-error/15 text-error' }
@@ -452,6 +551,11 @@ export default function AdminProductsPage() {
                   <span>{t('admin.productsPage.flashSaleLabel')}</span>
                 </label>
               </div>
+
+              {editingId && (() => {
+                const current = products.find((p) => p.id === editingId)
+                return current ? <VariantEditor product={current} /> : null
+              })()}
 
               {formError && <p className="text-sm text-error">{formError}</p>}
 

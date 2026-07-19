@@ -8,6 +8,7 @@ import { formatPrice } from '@/components/shared/ProductCard'
 import { rememberOrderId } from '@/lib/recentOrders'
 import { localizedName } from '@/lib/localize'
 import { promptPayQrDataUrl } from '@/lib/promptpay'
+import BankBadge from '@/components/shared/BankBadge'
 
 export default function CartPage() {
   const { t, i18n } = useTranslation()
@@ -81,7 +82,7 @@ export default function CartPage() {
         phone,
         shippingAddress,
         paymentMethod,
-        items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
+        items: items.map((i) => ({ productId: i.product.id, variantId: i.variant?.id, quantity: i.quantity })),
       })
       rememberOrderId(order.id)
       clear()
@@ -110,53 +111,58 @@ export default function CartPage() {
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="space-y-4 lg:col-span-2">
-            {items.map((item) => (
-              <div
-                key={item.product.id}
-                className="flex gap-4 rounded-xl border border-border bg-card p-4"
-              >
-                <img
-                  src={item.product.images[0]}
-                  alt={localizedName(item.product, i18n.language)}
-                  className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-                />
-                <div className="flex flex-1 flex-col justify-between">
-                  <div>
-                    <Link to={`/product/${item.product.slug}`} className="text-sm font-semibold hover:text-primary">
-                      {localizedName(item.product, i18n.language)}
-                    </Link>
-                    <p className="mt-1 text-sm font-bold text-primary">{formatPrice(item.product.price)}</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center overflow-hidden rounded-lg border border-border">
+            {items.map((item) => {
+              const price = item.product.price + (item.variant?.priceDelta ?? 0)
+              const maxStock = item.variant ? item.variant.stock : item.product.stock
+              return (
+                <div
+                  key={`${item.product.id}::${item.variant?.id ?? ''}`}
+                  className="flex gap-4 rounded-xl border border-border bg-card p-4"
+                >
+                  <img
+                    src={item.product.images[0]}
+                    alt={localizedName(item.product, i18n.language)}
+                    className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="flex flex-1 flex-col justify-between">
+                    <div>
+                      <Link to={`/product/${item.product.slug}`} className="text-sm font-semibold hover:text-primary">
+                        {localizedName(item.product, i18n.language)}
+                      </Link>
+                      {item.variant && <p className="mt-0.5 text-xs text-muted">{item.variant.name}</p>}
+                      <p className="mt-1 text-sm font-bold text-primary">{formatPrice(price)}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center overflow-hidden rounded-lg border border-border">
+                        <button
+                          onClick={() => setQuantity(item.product.id, item.quantity - 1, item.variant?.id)}
+                          className="flex h-8 w-8 items-center justify-center text-white hover:bg-card-hover"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="flex h-8 w-10 items-center justify-center border-x border-border text-sm">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => setQuantity(item.product.id, item.quantity + 1, item.variant?.id)}
+                          disabled={item.quantity >= maxStock}
+                          className="flex h-8 w-8 items-center justify-center text-white hover:bg-card-hover disabled:text-muted"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                       <button
-                        onClick={() => setQuantity(item.product.id, item.quantity - 1)}
-                        className="flex h-8 w-8 items-center justify-center text-white hover:bg-card-hover"
+                        onClick={() => removeItem(item.product.id, item.variant?.id)}
+                        className="flex items-center gap-1 text-xs text-muted hover:text-primary"
                       >
-                        <Minus size={14} />
-                      </button>
-                      <span className="flex h-8 w-10 items-center justify-center border-x border-border text-sm">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(item.product.id, item.quantity + 1)}
-                        disabled={item.quantity >= item.product.stock}
-                        className="flex h-8 w-8 items-center justify-center text-white hover:bg-card-hover disabled:text-muted"
-                      >
-                        <Plus size={14} />
+                        <Trash2 size={14} />
+                        {t('cart.remove', 'Remove')}
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.product.id)}
-                      className="flex items-center gap-1 text-xs text-muted hover:text-primary"
-                    >
-                      <Trash2 size={14} />
-                      {t('cart.remove', 'Remove')}
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="h-fit rounded-xl border border-border bg-card p-5">
@@ -216,7 +222,12 @@ export default function CartPage() {
                       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
                         <Landmark size={14} /> {t('cart.bankAccount', 'Bank account')}
                       </div>
-                      {settings.bankName && <p className="text-muted-light">{settings.bankName}</p>}
+                      {settings.bankName && (
+                        <div className="flex items-center gap-2">
+                          <BankBadge bankName={settings.bankName} size={24} />
+                          <p className="text-muted-light">{settings.bankName}</p>
+                        </div>
+                      )}
                       {settings.bankAccountName && <p className="text-white">{settings.bankAccountName}</p>}
                       {settings.bankAccountNumber && (
                         <div className="flex items-center gap-2">

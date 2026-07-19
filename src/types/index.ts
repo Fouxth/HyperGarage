@@ -22,6 +22,16 @@ export interface Product {
   isFeatured?: boolean
   isFlashSale?: boolean
   flashSaleEnd?: string
+  variants: ProductVariant[]
+}
+
+export interface ProductVariant {
+  id: string
+  name: string
+  sku: string
+  priceDelta: number
+  stock: number
+  image?: string
 }
 
 export interface VehicleCompatibility {
@@ -62,6 +72,8 @@ export interface OrderItem {
   productName: string
   productSlug: string
   productImage?: string
+  variantId?: string
+  variantName?: string
   quantity: number
   priceEach: number
 }
@@ -78,6 +90,83 @@ export interface Order {
   paymentStatus: 'pending' | 'paid' | 'refunded'
   createdAt: string
   shippingAddress: string
+  trackingNumber?: string
+  carrier?: string
+  customerId?: string
+}
+
+export type ReturnStatus = 'requested' | 'approved' | 'rejected' | 'refunded'
+
+export interface ReturnRecord {
+  id: string
+  orderId: string
+  orderNumber: string
+  customer: string
+  reason: string
+  status: ReturnStatus
+  refundAmount?: number
+  note?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminCustomer {
+  id: string
+  email: string
+  name: string
+  phone?: string
+  banned: boolean
+  orderCount: number
+  totalSpent: number
+  createdAt: string
+}
+
+export type NotificationType = 'new_order' | 'low_stock' | 'new_review' | 'return_requested'
+
+export interface AppNotification {
+  id: string
+  type: NotificationType
+  message: string
+  entityId?: string
+  read: boolean
+  createdAt: string
+}
+
+export interface AuditLogEntry {
+  id: string
+  actorId: string
+  actorName: string
+  action: string
+  entity: string
+  entityId: string
+  createdAt: string
+}
+
+export interface Customer {
+  id: string
+  email: string
+  name: string
+  phone?: string
+}
+
+export interface CustomerAddress {
+  id: string
+  customerId: string
+  label: string
+  address: string
+  isDefault: boolean
+}
+
+export interface CustomerOrder {
+  id: string
+  orderNumber: string
+  total: number
+  status: Order['status']
+  paymentStatus: Order['paymentStatus']
+  trackingNumber?: string
+  carrier?: string
+  createdAt: string
+  items: { productName: string; productImage?: string; variantName?: string; quantity: number; priceEach: number }[]
 }
 
 export interface StoreSettings {

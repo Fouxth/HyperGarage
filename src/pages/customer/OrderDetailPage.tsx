@@ -5,6 +5,7 @@ import { CheckCircle2, Package, Landmark, QrCode } from 'lucide-react'
 import { useOrder, useSettings } from '@/api/hooks'
 import { formatPrice } from '@/components/shared/ProductCard'
 import { promptPayQrDataUrl } from '@/lib/promptpay'
+import { getCustomerToken } from '@/api/customerClient'
 
 const statusLabel: Record<string, string> = {
   pending: 'Pending',
@@ -20,6 +21,7 @@ export default function OrderDetailPage() {
   const { data: order, isLoading } = useOrder(id)
   const { data: settings } = useSettings()
   const [qr, setQr] = useState<string | null>(null)
+  const isCustomerLoggedIn = !!getCustomerToken()
 
   const showPaymentInstructions =
     order?.paymentMethod === 'transfer' && order?.paymentStatus === 'pending'
@@ -148,8 +150,11 @@ export default function OrderDetailPage() {
           <Link to="/products" className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-white/5">
             {t('order.continueShopping', 'Continue Shopping')}
           </Link>
-          <Link to="/account" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white">
-            {t('order.viewAllOrders', 'View My Orders')}
+          <Link
+            to={isCustomerLoggedIn ? '/account/my-orders' : '/account'}
+            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            {isCustomerLoggedIn ? 'ดูคำสั่งซื้อของฉันเพิ่มเติม' : t('order.viewAllOrders', 'View My Orders')}
           </Link>
         </div>
       </div>
