@@ -1,4 +1,4 @@
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Package, LogOut, MapPin, ChevronRight } from 'lucide-react'
 import { useCustomerMe, useCustomerOrders } from '@/api/customerHooks'
 import { getCustomerToken } from '@/api/customerClient'
@@ -13,6 +13,7 @@ const statusLabels: Record<string, string> = {
 
 export default function MyOrdersPage() {
   const token = getCustomerToken()
+  const navigate = useNavigate()
   const { data: me } = useCustomerMe()
   const { data: orders = [], isLoading } = useCustomerOrders()
 
@@ -21,7 +22,7 @@ export default function MyOrdersPage() {
   const handleLogout = () => {
     localStorage.removeItem('hypergarage_customer_token')
     localStorage.removeItem('hypergarage_customer_user')
-    window.location.href = '/account/login'
+    navigate('/account/login')
   }
 
   return (
