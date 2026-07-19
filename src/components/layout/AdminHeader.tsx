@@ -11,12 +11,20 @@ import {
   Settings,
   User,
   ShoppingCart,
+  AlertTriangle,
   Star,
-  Package,
+  Undo2,
+  Check,
 } from 'lucide-react';
-import { useActivity } from '@/api/hooks';
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/api/hooks';
+import type { NotificationType } from '@/types';
 
-const iconFor = { order: ShoppingCart, review: Star, product: Package };
+const notificationIconFor: Record<NotificationType, typeof Bell> = {
+  new_order: ShoppingCart,
+  low_stock: AlertTriangle,
+  new_review: Star,
+  return_requested: Undo2,
+};
 
 interface AdminHeaderProps {
   onMenuToggle: () => void;
@@ -29,10 +37,12 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
   const profileRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
-  const { data: events = [] } = useActivity();
+  const { data: notifications = [] } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
-  const [unreadCount, setUnreadCount] = useState(5);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     const rawUser = localStorage.getItem('hypergarage_admin_user');
@@ -72,20 +82,6 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
 
   const handleNotificationsClick = () => {
     setNotificationsOpen(!notificationsOpen);
-    setUnreadCount(0);
-  };
-
-  const translateMessage = (msg: string) => {
-    if (msg.startsWith('New order')) {
-      return msg.replace('New order', 'คำสั่งซื้อใหม่').replace('from', 'จาก')
-    }
-    if (msg.includes('left a') && msg.includes('star review')) {
-      return msg.replace('left a', 'เขียนรีวิว').replace('star review', 'ดาว')
-    }
-    if (msg.startsWith('Product') && msg.includes('was added to the catalog')) {
-      return msg.replace('Product', 'สินค้า').replace('was added to the catalog', 'ถูกเพิ่มเข้าสู่แคตตาล็อกร้านค้า')
-    }
-    return msg
   };
 
   return (
@@ -152,28 +148,51 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 >
                   <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                     <p className="text-sm font-semibold text-white">การแจ้งเตือน</p>
-                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
-                      {events.length} รายการทั้งหมด
-                    </span>
+                    {unreadCount > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => markAllRead.mutate()}
+                        className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold hover:bg-primary/20"
+                      >
+                        อ่านทั้งหมด ({unreadCount})
+                      </button>
+                    ) : (
+                      <span className="text-[10px] bg-white/5 text-muted px-2 py-0.5 rounded-full font-bold">
+                        อ่านหมดแล้ว
+                      </span>
+                    )}
                   </div>
                   <div className="divide-y divide-border/50 max-h-80 overflow-y-auto">
-                    {events.slice(0, 5).map((event, i) => {
-                      const Icon = iconFor[event.type as keyof typeof iconFor] || Bell
+                    {notifications.slice(0, 8).map((n) => {
+                      const Icon = notificationIconFor[n.type] || Bell
                       return (
-                        <div key={i} className="flex gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left">
+                        <div
+                          key={n.id}
+                          className={`flex gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left ${!n.read ? 'bg-primary/5' : ''}`}
+                        >
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
                             <Icon className="h-4 w-4 text-primary" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-white leading-relaxed truncate">{translateMessage(event.message)}</p>
+                            <p className="text-xs text-white leading-relaxed">{n.message}</p>
                             <p className="text-[10px] text-muted mt-1">
-                              {new Date(event.createdAt).toLocaleDateString('th-TH')} {new Date(event.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
+                              {new Date(n.createdAt).toLocaleDateString('th-TH')} {new Date(n.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
                             </p>
                           </div>
+                          {!n.read && (
+                            <button
+                              type="button"
+                              onClick={() => markRead.mutate(n.id)}
+                              className="flex-shrink-0 self-start rounded-full p-1 text-muted hover:text-white"
+                              title="อ่านแล้ว"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       )
                     })}
-                    {events.length === 0 && (
+                    {notifications.length === 0 && (
                       <p className="py-8 text-center text-xs text-muted">ไม่มีการแจ้งเตือนในขณะนี้</p>
                     )}
                   </div>
