@@ -33,6 +33,11 @@ const AccountPage = lazy(() => import('@/pages/customer/AccountPage'))
 const PromotionsPage = lazy(() => import('@/pages/customer/PromotionsPage'))
 const BlogPage = lazy(() => import('@/pages/customer/BlogPage'))
 const LegalPage = lazy(() => import('@/pages/customer/LegalPage'))
+const HelpPage = lazy(() => import('@/pages/customer/HelpPage'))
+const ShippingInfoPage = lazy(() => import('@/pages/customer/ShippingInfoPage'))
+const ReturnsPage = lazy(() => import('@/pages/customer/ReturnsPage'))
+const OrderTrackingPage = lazy(() => import('@/pages/customer/OrderTrackingPage'))
+const ContactPage = lazy(() => import('@/pages/customer/ContactPage'))
 const LoginPage = lazy(() => import('@/pages/admin/LoginPage'))
 const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'))
 const AdminProductsPage = lazy(() => import('@/pages/admin/ProductsPage'))
@@ -83,6 +88,11 @@ export default function App() {
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="blog" element={<BlogPage />} />
           <Route path="legal/:type" element={<LegalPage />} />
+          <Route path="help" element={<HelpPage />} />
+          <Route path="shipping-info" element={<ShippingInfoPage />} />
+          <Route path="returns" element={<ReturnsPage />} />
+          <Route path="order-tracking" element={<OrderTrackingPage />} />
+          <Route path="contact" element={<ContactPage />} />
         </Route>
         <Route path="admin/login" element={<LoginPage />} />
         <Route path="admin" element={<AdminLayout />}>
