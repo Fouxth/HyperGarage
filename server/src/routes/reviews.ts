@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import { notify } from '../lib/notify.js'
 
 export const reviewsRouter = Router()
 
@@ -53,6 +54,8 @@ reviewsRouter.post('/', async (req, res) => {
       })
       return created
     })
+
+    await notify('new_review', `รีวิวใหม่ ${rating} ดาว จาก ${userName}`, review.productId)
 
     res.status(201).json({
       id: review.id,

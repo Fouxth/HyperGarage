@@ -13,6 +13,12 @@ import { settingsRouter } from './routes/settings.js'
 import { authRouter } from './routes/auth.js'
 import { staffRouter } from './routes/staff.js'
 import { uploadRouter } from './routes/upload.js'
+import { returnsRouter } from './routes/returns.js'
+import { accountRouter } from './routes/account.js'
+import { customersRouter } from './routes/customers.js'
+import { notificationsRouter } from './routes/notifications.js'
+import { auditRouter } from './routes/audit.js'
+import { backupRouter } from './routes/backup.js'
 
 const app = express()
 app.use(cors())
@@ -30,6 +36,12 @@ app.use('/api/settings', settingsRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/staff', staffRouter)
 app.use('/api/upload', uploadRouter)
+app.use('/api/returns', returnsRouter)
+app.use('/api/account', accountRouter)
+app.use('/api/customers', customersRouter)
+app.use('/api/notifications', notificationsRouter)
+app.use('/api/audit', auditRouter)
+app.use('/api/backup', backupRouter)
 app.use('/uploads', express.static('uploads'))
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))

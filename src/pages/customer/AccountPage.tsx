@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, Package, User } from 'lucide-react'
 import { useOrders } from '@/api/hooks'
-import { getRememberedOrderIds } from '@/lib/recentOrders'
 import { formatPrice } from '@/components/shared/ProductCard'
 
 const statusColor: Record<string, string> = {
@@ -19,12 +18,9 @@ export default function AccountPage() {
   const [phone, setPhone] = useState('')
   const [searchedPhone, setSearchedPhone] = useState('')
 
-  const rememberedIds = getRememberedOrderIds()
-  const { data: allOrders = [] } = useOrders()
-  const rememberedOrders = allOrders.filter((o) => rememberedIds.includes(o.id))
-  const { data: phoneOrders = [], isFetching } = useOrders(searchedPhone ? { phone: searchedPhone } : undefined)
-
-  const orders = searchedPhone ? phoneOrders : rememberedOrders
+  const { data: orders = [], isFetching } = useOrders(searchedPhone ? { phone: searchedPhone } : undefined, {
+    enabled: !!searchedPhone,
+  })
 
   return (
     <div className="min-h-screen bg-bg">
@@ -34,7 +30,18 @@ export default function AccountPage() {
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('account.title', 'My Orders')}</h1>
         </div>
         <p className="mt-1 text-sm text-muted">
-          {t('account.noAuth', 'No account needed — look up your orders by phone number, or view orders placed on this device.')}
+          {t('account.noAuth', 'No account needed — look up your orders by phone number.')}
+        </p>
+        <p className="mt-2 text-sm text-muted">
+          หรือ{' '}
+          <Link to="/account/login" className="text-primary hover:underline">
+            เข้าสู่ระบบ
+          </Link>{' '}
+          /{' '}
+          <Link to="/account/register" className="text-primary hover:underline">
+            สมัครสมาชิก
+          </Link>{' '}
+          เพื่อบันทึกที่อยู่และดูประวัติการสั่งซื้อแบบถาวร
         </p>
 
         <div className="mt-6 flex gap-2">
@@ -55,33 +62,34 @@ export default function AccountPage() {
         </div>
 
         <div className="mt-8 space-y-3">
-          {isFetching && <p className="text-sm text-muted">Loading…</p>}
-          {!isFetching && orders.length === 0 && (
+          {searchedPhone && isFetching && <p className="text-sm text-muted">Loading…</p>}
+          {searchedPhone && !isFetching && orders.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <Package className="h-12 w-12 text-muted" />
               <p className="text-sm text-muted">{t('account.noOrders', 'No orders found')}</p>
             </div>
           )}
-          {orders.map((order) => (
-            <Link
-              key={order.id}
-              to={`/orders/${order.id}`}
-              className="flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-border-light"
-            >
-              <div>
-                <p className="font-mono text-sm font-semibold">{order.orderNumber}</p>
-                <p className="mt-1 text-xs text-muted">
-                  {new Date(order.createdAt).toLocaleDateString()} · {order.items.length} items
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-primary">{formatPrice(order.total)}</p>
-                <p className={`mt-1 text-xs font-medium capitalize ${statusColor[order.status] ?? 'text-muted'}`}>
-                  {order.status}
-                </p>
-              </div>
-            </Link>
-          ))}
+          {searchedPhone &&
+            orders.map((order) => (
+              <Link
+                key={order.id}
+                to={`/orders/${order.id}`}
+                className="flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-border-light"
+              >
+                <div>
+                  <p className="font-mono text-sm font-semibold">{order.orderNumber}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {new Date(order.createdAt).toLocaleDateString()} · {order.items.length} items
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-primary">{formatPrice(order.total)}</p>
+                  <p className={`mt-1 text-xs font-medium capitalize ${statusColor[order.status] ?? 'text-muted'}`}>
+                    {order.status}
+                  </p>
+                </div>
+              </Link>
+            ))}
         </div>
       </div>
     </div>

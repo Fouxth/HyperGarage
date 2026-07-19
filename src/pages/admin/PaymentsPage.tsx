@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { CreditCard, Save, Landmark, Truck, QrCode, CheckCircle2, RotateCcw } from 'lucide-react'
+import { CreditCard, Save, Landmark, Truck, QrCode, CheckCircle2, RotateCcw, Check } from 'lucide-react'
 import { useOrders, useSettings, useUpdateSettings, useUpdatePaymentStatus } from '@/api/hooks'
+import { THAI_BANKS, bankInitials } from '@/lib/banks'
+import BankBadge from '@/components/shared/BankBadge'
 
 const emptyForm = {
   codEnabled: true,
@@ -141,9 +143,36 @@ export default function PaymentsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelCls}>ธนาคาร</label>
-            <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder="เช่น ธนาคารกสิกรไทย" className={inputCls} />
+          <div className="sm:col-span-2">
+            <label className={labelCls}>ธนาคาร (สัญลักษณ์ธนาคาร)</label>
+            <div className="flex flex-wrap gap-2">
+              {THAI_BANKS.map((bank) => {
+                const active = form.bankName === bank.name
+                return (
+                  <button
+                    key={bank.name}
+                    type="button"
+                    onClick={() => setForm({ ...form, bankName: bank.name })}
+                    title={bank.name}
+                    className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-xs transition-colors ${
+                      active ? 'border-primary bg-primary/10 text-white' : 'border-border bg-bg text-muted-light hover:border-primary/40'
+                    }`}
+                  >
+                    <div
+                      style={{ backgroundColor: bank.color }}
+                      className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                    >
+                      {bankInitials(bank)}
+                    </div>
+                    <span className="max-w-[90px] truncate font-medium">{bank.short}</span>
+                    {active && <Check size={13} className="text-primary" />}
+                  </button>
+                )
+              })}
+            </div>
+            {form.bankName && (
+              <p className="mt-2 text-xs text-muted">เลือกแล้ว: {form.bankName}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>ชื่อบัญชี</label>

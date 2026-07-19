@@ -135,6 +135,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState<TabKey>('specs')
   const [selectedImage, setSelectedImage] = useState(0)
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined)
   const [reviewForm, setReviewForm] = useState({ userName: '', rating: 5, comment: '' })
   const createReview = useCreateReview()
   const navigate = useNavigate()
@@ -180,6 +181,13 @@ export default function ProductPage() {
   }
 
   // --- Derived ---
+  const hasVariants = product.variants.length > 0
+  const selectedVariant = hasVariants
+    ? product.variants.find((v) => v.id === selectedVariantId) ?? product.variants[0]
+    : undefined
+  const effectivePrice = product.price + (selectedVariant?.priceDelta ?? 0)
+  const effectiveStock = selectedVariant ? selectedVariant.stock : product.stock
+
   const relatedProducts = sameCategoryProducts
     .filter((p) => p.id !== product.id)
     .slice(0, 4)
@@ -194,7 +202,7 @@ export default function ProductPage() {
 
   const handleDecrement = () => setQuantity((q) => Math.max(1, q - 1))
   const handleIncrement = () =>
-    setQuantity((q) => Math.min(product.stock, q + 1))
+    setQuantity((q) => Math.min(effectiveStock, q + 1))
 
   // ========================================================================
   return (
@@ -308,7 +316,7 @@ export default function ProductPage() {
             {/* Price */}
             <div className="flex flex-wrap items-end gap-3">
               <span className="text-3xl font-extrabold text-primary">
-                ฿{product.price.toLocaleString()}
+                ฿{effectivePrice.toLocaleString()}
               </span>
               {product.originalPrice && (
                 <span className="text-lg text-muted line-through">
@@ -322,9 +330,37 @@ export default function ProductPage() {
               )}
             </div>
 
+            {/* Variant picker */}
+            {hasVariants && (
+              <div>
+                <span className="mb-2 block text-sm font-medium text-muted">ตัวเลือกสินค้า</span>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => { setSelectedVariantId(v.id); setQuantity(1) }}
+                      disabled={v.stock === 0}
+                      className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-40 ${
+                        selectedVariant?.id === v.id
+                          ? 'border-primary bg-primary/10 text-white'
+                          : 'border-border text-muted-light hover:border-primary/40'
+                      }`}
+                    >
+                      {v.name}
+                      {v.priceDelta !== 0 && (
+                        <span className="ml-1.5 text-xs text-muted">
+                          ({v.priceDelta > 0 ? '+' : ''}฿{v.priceDelta.toLocaleString()})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Stock */}
             <div className="self-start">
-              <StockBadge stock={product.stock} />
+              <StockBadge stock={effectiveStock} />
             </div>
 
             {/* Description */}
@@ -350,7 +386,7 @@ export default function ProductPage() {
                 </span>
                 <button
                   onClick={handleIncrement}
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= effectiveStock}
                   className="flex h-10 w-10 items-center justify-center text-white transition-colors hover:bg-card-hover disabled:text-muted"
                 >
                   <Plus size={16} />
@@ -361,8 +397,8 @@ export default function ProductPage() {
             {/* Actions */}
             <div className="flex flex-col gap-3">
               <button
-                disabled={product.stock === 0}
-                onClick={() => addItem(product, quantity)}
+                disabled={effectiveStock === 0}
+                onClick={() => addItem(product, quantity, selectedVariant)}
                 className="gradient-primary flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 <ShoppingCart size={20} />
@@ -371,9 +407,9 @@ export default function ProductPage() {
 
               <div className="flex gap-3">
                 <button
-                  disabled={product.stock === 0}
+                  disabled={effectiveStock === 0}
                   onClick={() => {
-                    addItem(product, quantity)
+                    addItem(product, quantity, selectedVariant)
                     navigate('/cart')
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/5 disabled:opacity-40"

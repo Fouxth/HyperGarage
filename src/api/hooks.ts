@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type ProductInput, type CategoryInput, type BrandInput, type CheckoutInput, type CouponInput, type OrdersQuery, type FlashSaleInput, type CreateReviewInput } from './client'
-import type { Order, StoreSettings } from '@/types'
+import { api, type ProductInput, type CategoryInput, type BrandInput, type CheckoutInput, type CouponInput, type OrdersQuery, type FlashSaleInput, type CreateReviewInput, type VariantInput, type ReturnInput, type UpdateReturnStatusInput, type ShippingInput } from './client'
+import type { Order, StoreSettings, ReturnStatus } from '@/types'
 
 export const useCategories = () =>
   useQuery({ queryKey: ['categories'], queryFn: api.categories })
@@ -28,8 +28,8 @@ export const useProduct = (slug: string | undefined) =>
     enabled: !!slug,
   })
 
-export const useOrders = (params?: OrdersQuery) =>
-  useQuery({ queryKey: ['orders', params], queryFn: () => api.orders(params) })
+export const useOrders = (params?: OrdersQuery, options?: { enabled?: boolean }) =>
+  useQuery({ queryKey: ['orders', params], queryFn: () => api.orders(params), enabled: options?.enabled })
 
 export const useOrder = (id: string | undefined) =>
   useQuery({ queryKey: ['order', id], queryFn: () => api.order(id!), enabled: !!id })
@@ -275,3 +275,95 @@ export const useUpdateSettings = () => {
 export const useActivity = () => useQuery({ queryKey: ['activity'], queryFn: api.activity })
 
 export const useReports = () => useQuery({ queryKey: ['reports'], queryFn: api.reports })
+
+export const useUpdateShipping = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: ShippingInput }) => api.updateShipping(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order'] })
+    },
+  })
+}
+
+export const useCreateVariant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, input }: { productId: string; input: VariantInput }) => api.createVariant(productId, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+  })
+}
+
+export const useUpdateVariant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, variantId, input }: { productId: string; variantId: string; input: VariantInput }) =>
+      api.updateVariant(productId, variantId, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+  })
+}
+
+export const useDeleteVariant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, variantId }: { productId: string; variantId: string }) => api.deleteVariant(productId, variantId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+  })
+}
+
+export const useReturns = (status?: ReturnStatus | 'All') =>
+  useQuery({ queryKey: ['returns', status], queryFn: () => api.returns(status) })
+
+export const useCreateReturn = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: ReturnInput) => api.createReturn(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['returns'] }),
+  })
+}
+
+export const useUpdateReturnStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateReturnStatusInput }) => api.updateReturnStatus(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['returns'] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+export const useCustomers = () => useQuery({ queryKey: ['customers'], queryFn: api.customers })
+
+export const useUpdateCustomer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: { name?: string; phone?: string; banned?: boolean } }) =>
+      api.updateCustomer(id, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customers'] }),
+  })
+}
+
+export const useNotifications = (read?: boolean) =>
+  useQuery({ queryKey: ['notifications', read], queryFn: () => api.notifications(read), refetchInterval: 30000 })
+
+export const useMarkNotificationRead = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.markNotificationRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  })
+}
+
+export const useMarkAllNotificationsRead = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.markAllNotificationsRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  })
+}
+
+export const useAuditLog = (params?: { entity?: string; action?: string }) =>
+  useQuery({ queryKey: ['auditLog', params], queryFn: () => api.auditLog(params) })

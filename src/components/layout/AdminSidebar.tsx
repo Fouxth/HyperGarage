@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   CreditCard,
   Truck,
+  Undo2,
   Ticket,
   Zap,
   Users,
@@ -61,6 +62,7 @@ const navSections: NavSection[] = [
       { to: '/admin/orders', label: 'admin.nav.orders', icon: ShoppingCart },
       { to: '/admin/payments', label: 'admin.nav.payments', icon: CreditCard },
       { to: '/admin/shipping', label: 'admin.nav.shipping', icon: Truck },
+      { to: '/admin/returns', label: 'admin.nav.returnsAdmin', icon: Undo2 },
     ],
   },
   {

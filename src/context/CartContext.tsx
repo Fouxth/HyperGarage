@@ -1,16 +1,21 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Product } from '@/types'
+import type { Product, ProductVariant } from '@/types'
 
 interface CartLine {
   product: Product
+  variant?: ProductVariant
   quantity: number
+}
+
+function lineKey(productId: string, variantId?: string) {
+  return `${productId}::${variantId ?? ''}`
 }
 
 interface CartContextValue {
   items: CartLine[]
-  addItem: (product: Product, quantity?: number) => void
-  removeItem: (productId: string) => void
-  setQuantity: (productId: string, quantity: number) => void
+  addItem: (product: Product, quantity?: number, variant?: ProductVariant) => void
+  removeItem: (productId: string, variantId?: string) => void
+  setQuantity: (productId: string, quantity: number, variantId?: string) => void
   clear: () => void
   count: number
   subtotal: number
@@ -35,31 +40,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items])
 
-  const addItem = (product: Product, quantity = 1) => {
+  const addItem = (product: Product, quantity = 1, variant?: ProductVariant) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id)
+      const key = lineKey(product.id, variant?.id)
+      const existing = prev.find((i) => lineKey(i.product.id, i.variant?.id) === key)
       if (existing) {
         return prev.map((i) =>
-          i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
+          lineKey(i.product.id, i.variant?.id) === key ? { ...i, quantity: i.quantity + quantity } : i
         )
       }
-      return [...prev, { product, quantity }]
+      return [...prev, { product, variant, quantity }]
     })
   }
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((i) => i.product.id !== productId))
+  const removeItem = (productId: string, variantId?: string) => {
+    const key = lineKey(productId, variantId)
+    setItems((prev) => prev.filter((i) => lineKey(i.product.id, i.variant?.id) !== key))
   }
 
-  const setQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) return removeItem(productId)
-    setItems((prev) => prev.map((i) => (i.product.id === productId ? { ...i, quantity } : i)))
+  const setQuantity = (productId: string, quantity: number, variantId?: string) => {
+    if (quantity <= 0) return removeItem(productId, variantId)
+    const key = lineKey(productId, variantId)
+    setItems((prev) => prev.map((i) => (lineKey(i.product.id, i.variant?.id) === key ? { ...i, quantity } : i)))
   }
 
   const clear = () => setItems([])
 
   const count = items.reduce((sum, i) => sum + i.quantity, 0)
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.product.price, 0)
+  const subtotal = items.reduce((sum, i) => sum + i.quantity * (i.product.price + (i.variant?.priceDelta ?? 0)), 0)
 
   return (
     <CartContext.Provider value={{ items, addItem, removeItem, setQuantity, clear, count, subtotal }}>

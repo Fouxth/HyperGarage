@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { getCustomerToken } from '@/api/customerClient';
 
 const navLinks = [
   { to: '/', label: 'nav.home' },
@@ -30,6 +31,7 @@ export default function Header() {
   const searchRef = useRef<HTMLInputElement>(null);
   const { count: cartCount } = useCart();
   const { ids: wishlistIds } = useWishlist();
+  const accountHref = getCustomerToken() ? '/account/my-orders' : '/account';
 
   const toggleLanguage = () => {
     const next = i18n.language === 'th' ? 'en' : 'th';
@@ -145,7 +147,7 @@ export default function Header() {
 
               {/* User */}
               <Link
-                to="/account"
+                to={accountHref}
                 className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full text-muted hover:text-white hover:bg-white/5 transition-colors"
                 aria-label={t('nav.account')}
               >
@@ -248,7 +250,7 @@ export default function Header() {
               {/* Drawer footer actions */}
               <div className="border-t border-border px-5 py-4 space-y-3">
                 <Link
-                  to="/account"
+                  to={accountHref}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 text-sm text-muted hover:text-white transition-colors"
                 >
