@@ -90,6 +90,10 @@ const navSections: NavSection[] = [
       { to: '/admin/maintenance', label: 'admin.nav.maintenance', icon: Wrench },
     ],
   },
+  {
+    title: 'เอกสารโครงการ (Docs & Workshops)',
+    items: [],
+  },
 ];
 
 interface AdminSidebarProps {
@@ -206,23 +210,55 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    {section.items.map((item) => (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        end={item.to === '/admin'}
-                        className={({ isActive }) =>
-                          `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                            isActive
-                              ? 'text-white bg-primary/10 font-medium'
-                              : 'text-muted hover:text-white hover:bg-white/5'
-                          }`
-                        }
-                      >
-                        <item.icon className="w-4 h-4 flex-shrink-0 transition-colors" />
-                        <span className="truncate">{t(item.label)}</span>
-                      </NavLink>
-                    ))}
+                    {section.title === 'เอกสารโครงการ (Docs & Workshops)' ? (
+                      <div className="space-y-1 pt-1">
+                        <a
+                          href={`${import.meta.env.BASE_URL || '/'}srs.html`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary hover:bg-primary/10 transition-colors font-medium"
+                        >
+                          <FileText className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">📄 เอกสาร SRS</span>
+                        </a>
+                        <a
+                          href="https://github.com/Fouxth/HyperGarage/blob/main/docs/project_workshops.md"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          <Wrench className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">🛠️ รายงาน Workshop 1-6</span>
+                        </a>
+                        <a
+                          href="https://github.com/Fouxth/HyperGarage/blob/main/docs/master_technical_reference.md"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          <Database className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">📘 คัมภีร์ข้อมูลทางเทคนิค</span>
+                        </a>
+                      </div>
+                    ) : (
+                      section.items.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          end={item.to === '/admin'}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                              isActive
+                                ? 'text-white bg-primary/10 font-medium'
+                                : 'text-muted hover:text-white hover:bg-white/5'
+                            }`
+                          }
+                        >
+                          <item.icon className="w-4 h-4 flex-shrink-0 transition-colors" />
+                          <span className="truncate">{t(item.label)}</span>
+                        </NavLink>
+                      ))
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
