@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperGarage — System Requirement Specification (SRS)</title>
+    <title>HyperGarage — Workshops Log & Development Milestones</title>
 
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 
@@ -24,7 +24,6 @@
             --font-display: 'Space Grotesk', 'Sarabun', sans-serif;
             --font-body: 'Sarabun', sans-serif;
 
-            /* Light theme — warm paper tone, not a slate/navy admin theme */
             --bg-page: #faf7f2;
             --bg-panel: #ffffff;
             --bg-diagram: #1c1a17;
@@ -61,7 +60,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Reading progress rail */
         .progress-rail {
             position: fixed;
             top: 0; left: 0;
@@ -72,7 +70,6 @@
             transition: width 0.1s linear;
         }
 
-        /* Top bar — replaces a persistent sidebar entirely */
         .topbar {
             position: sticky;
             top: 0;
@@ -148,7 +145,6 @@
         }
         .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* TOC drawer — slides from the right, not a fixed sidebar */
         .toc-scrim {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.35);
@@ -196,7 +192,6 @@
         .toc-list a:hover { background: var(--primary-soft); color: var(--primary); }
         .toc-list a.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
 
-        /* Centered editorial column — no boxed "card" panel */
         .doc-wrap {
             max-width: 760px;
             margin: 0 auto;
@@ -214,7 +209,6 @@
 
         .markdown-body > p:first-of-type { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
 
-        /* Chapter heading treatment — big faded numeral, distinct from a plain underlined h2 */
         .markdown-body h2.chapter-heading {
             position: relative;
             font-family: var(--font-display);
@@ -298,16 +292,6 @@
             height: auto !important;
         }
 
-        .info-alert {
-            display: flex; gap: 0.75rem;
-            background-color: var(--primary-soft);
-            border-left: 3px solid var(--primary);
-            padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0;
-            color: var(--text-main); font-size: 0.9rem; line-height: 1.5;
-        }
-        .info-alert i { color: var(--primary); font-size: 1.1rem; }
-
-        /* Floating back-to-top */
         .fab-top {
             position: fixed;
             bottom: 1.75rem;
@@ -339,13 +323,6 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-
-        @media (max-width: 640px) {
-            .topbar { padding: 0.8rem 1rem; }
-            .brand-mark span { font-size: 0.9rem; }
-            .pill-btn span.pill-label { display: none; }
-            .doc-wrap { padding: 2.5rem 1.1rem 4rem; }
-        }
     </style>
 </head>
 <body>
@@ -355,10 +332,10 @@
     <header class="topbar">
         <a href="./" class="brand-mark">
             <span class="logo-dot"></span>
-            <span>HyperGarage<br><small>System Requirement Spec</small></span>
+            <span>HyperGarage<br><small>Workshops Log & Milestones</small></span>
         </a>
         <div class="topbar-actions">
-            <a href="./workshops.html" class="pill-btn" style="text-decoration:none;"><i class="fa-solid fa-screwdriver-wrench"></i> <span class="pill-label">ดู Workshops</span></a>
+            <a href="./srs.html" class="pill-btn" style="text-decoration:none;"><i class="fa-solid fa-file-contract"></i> <span class="pill-label">ดู SRS</span></a>
             <button class="pill-btn" id="tocBtn"><i class="fa-solid fa-list-ul"></i> <span class="pill-label">สารบัญ</span></button>
             <button class="icon-btn" id="themeToggle" title="สลับธีม สว่าง/มืด"><i class="fa-solid fa-moon"></i></button>
         </div>
@@ -367,7 +344,7 @@
     <div class="toc-scrim" id="tocScrim"></div>
     <nav class="toc-drawer" id="tocDrawer">
         <div class="toc-drawer-head">
-            <h2>สารบัญเอกสาร</h2>
+            <h2>สารบัญ Workshops</h2>
             <button class="icon-btn" id="tocClose"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="toc-list" id="tableOfContents">
@@ -379,11 +356,11 @@
         <article class="markdown-body" id="MDContent">
             <p style="text-align: center; padding: 2rem;">
                 <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
-                <br><br>กำลังดาวน์โหลดและเรนเดอร์เอกสาร SRS.md...
+                <br><br>กำลังดาวน์โหลดและเรนเดอร์เอกสาร WORKSHOPS.md...
             </p>
         </article>
         <div class="doc-footer">
-            <span>HyperGarage &mdash; เอกสารภายในสำหรับการพัฒนา</span>
+            <span>HyperGarage &mdash; รายงานสรุปการทำ Workshop 1 - 6</span>
             <a href="./" style="color: var(--primary); text-decoration: none;">&larr; กลับสู่หน้าร้าน</a>
         </div>
     </main>
@@ -407,7 +384,6 @@
         tocClose.addEventListener('click', closeTOC);
         tocScrim.addEventListener('click', closeTOC);
 
-        // Reading progress + back-to-top visibility
         window.addEventListener('scroll', () => {
             const scrollTop = window.scrollY;
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -424,26 +400,26 @@
                 html.classList.remove('light');
                 html.classList.add('dark', 'dark-mode-vars');
                 themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
-                localStorage.setItem('srs-theme', 'dark');
+                localStorage.setItem('workshops-theme', 'dark');
             } else {
                 html.classList.remove('dark', 'dark-mode-vars');
                 html.classList.add('light');
                 themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
-                localStorage.setItem('srs-theme', 'light');
+                localStorage.setItem('workshops-theme', 'light');
             }
             setTimeout(renderMermaidDiagrams, 50);
         });
 
-        const savedTheme = localStorage.getItem('srs-theme');
+        const savedTheme = localStorage.getItem('workshops-theme');
         if (savedTheme === 'dark') {
             document.documentElement.classList.remove('light');
             document.documentElement.classList.add('dark', 'dark-mode-vars');
             themeToggle.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
         }
 
-        fetch('./SRS.md')
+        fetch('./WORKSHOPS.md')
             .then(response => {
-                if (!response.ok) throw new Error('ไม่สามารถโหลดไฟล์ SRS.md ได้');
+                if (!response.ok) throw new Error('ไม่สามารถโหลดไฟล์ WORKSHOPS.md ได้');
                 return response.text();
             })
             .then(markdownText => {
@@ -468,21 +444,12 @@
             .catch(error => {
                 console.error(error);
                 document.getElementById('MDContent').innerHTML = `
-                    <div class="info-alert" style="background-color:rgba(239, 68, 68, 0.1); border-left-color:#ef4444;">
-                        <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i>
-                        <div>
-                            <strong>เกิดข้อผิดพลาดในการโหลดเอกสาร:</strong><br>
-                            ${error.message}<br><br>
-                            <span style="font-size:0.85rem; opacity:0.85;">
-                                หากเปิดไฟล์นี้ตรงๆ ผ่าน <code>file://</code> เบราว์เซอร์จะบล็อกการโหลด กรุณาเปิดผ่าน dev server
-                                (เช่น <code>npm run dev</code> แล้วเข้า <code>http://localhost:5173/srs.html</code>) หรือรัน production build
-                            </span>
-                        </div>
+                    <div style="padding:1.5rem; background:rgba(239, 68, 68, 0.1); border-left:3px solid #ef4444; border-radius:8px;">
+                        <strong>เกิดข้อผิดพลาดในการโหลดเอกสาร WORKSHOPS.md:</strong><br>${error.message}
                     </div>
                 `;
             });
 
-        // Table of Contents (built from original heading text, before numeral restyling)
         function generateTOC(container) {
             const headings = container.querySelectorAll('h2, h3');
             tableOfContents.innerHTML = '';
@@ -510,8 +477,6 @@
             });
         }
 
-        // Split "1. หัวข้อ" into a big faded numeral + title — the signature
-        // visual difference from a plain underlined heading.
         function applyChapterNumerals(container) {
             container.querySelectorAll('h2').forEach((h2) => {
                 const match = h2.textContent.match(/^(\d+)\.\s*(.+)$/);
@@ -531,9 +496,6 @@
             const mermaidDivs = document.querySelectorAll('.mermaid');
             if (mermaidDivs.length === 0) return;
 
-            // Wait for webfonts to finish loading first — Mermaid measures text
-            // width synchronously, and if it measures before the Google Font swaps
-            // in, node boxes are sized for the fallback font and labels clip.
             mermaidDivs.forEach((div) => {
                 if (!div.dataset.mermaidSource) div.dataset.mermaidSource = div.textContent;
             });

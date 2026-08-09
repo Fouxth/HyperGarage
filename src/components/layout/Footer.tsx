@@ -97,10 +97,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal & Docs */}
+          {/* Legal */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
-              {t('footer.legal')} & Docs
+              {t('footer.legal')}
             </h4>
             <ul className="space-y-2.5">
               {legalLinks.map((link) => (
@@ -113,36 +113,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a
-                  href={`${import.meta.env.BASE_URL || '/'}srs.html`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
-                >
-                  📄 เอกสาร SRS
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/Fouxth/HyperGarage/blob/main/docs/project_workshops.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
-                >
-                  🛠️ รายงาน Workshop 1-6
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/Fouxth/HyperGarage/blob/main/docs/master_technical_reference.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
-                >
-                  📘 คัมภีร์ข้อมูลทางเทคนิค
-                </a>
-              </li>
             </ul>
           </div>
 

@@ -222,12 +222,12 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                           <span className="truncate">📄 เอกสาร SRS</span>
                         </a>
                         <a
-                          href="https://github.com/Fouxth/HyperGarage/blob/main/docs/project_workshops.md"
+                          href={`${import.meta.env.BASE_URL || '/'}workshops.html`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted hover:text-white hover:bg-white/5 transition-colors"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted hover:text-white hover:bg-white/5 transition-colors font-medium"
                         >
-                          <Wrench className="w-4 h-4 flex-shrink-0" />
+                          <Wrench className="w-4 h-4 flex-shrink-0 text-primary" />
                           <span className="truncate">🛠️ รายงาน Workshop 1-6</span>
                         </a>
                         <a
