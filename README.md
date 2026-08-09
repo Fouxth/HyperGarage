@@ -14,6 +14,7 @@
 * **Repository URL:** `https://github.com/Fouxth/HyperGarage`
 * **เอกสารข้อกำหนดความต้องการซอฟต์แวร์มาตรฐาน IEEE 830 (SRS):** [docs/Software_Requirements_Specification_SRS.md](./docs/Software_Requirements_Specification_SRS.md) / [public/SRS.md](./public/SRS.md)
 * **คัมภีร์ข้อมูลเชิงลึกทางเทคนิคและแนวทางตอบคำถามสอบ (Master Technical Reference):** [docs/master_technical_reference.md](./docs/master_technical_reference.md)
+* **รายงานสรุปการทำ Workshop และลำดับการพัฒนาระบบ (Workshops Log):** [docs/project_workshops.md](./docs/project_workshops.md)
 * **หน้าแสดงเอกสาร SRS Interactive บนเว็บ:** [https://fouxth.github.io/HyperGarage/srs.html](https://fouxth.github.io/HyperGarage/srs.html)
 
 ---
