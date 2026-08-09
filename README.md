@@ -13,6 +13,7 @@
 
 * **Repository URL:** [https://github.com/Fouxth/HyperGarage](https://github.com/Fouxth/HyperGarage)
 * **หน้าแสดงเอกสาร SRS Interactive บนเว็บ:** [https://fouxth.github.io/HyperGarage/srs.html](https://fouxth.github.io/HyperGarage/srs.html)
+* **หน้าแสดงรายงาน Workshop 1 - 6 Interactive บนเว็บ:** [https://fouxth.github.io/HyperGarage/workshops.html](https://fouxth.github.io/HyperGarage/workshops.html)
 * **เอกสารข้อกำหนดความต้องการซอฟต์แวร์มาตรฐาน IEEE 830 (SRS):** [Software_Requirements_Specification_SRS.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/Software_Requirements_Specification_SRS.md)
 * **รายงานสรุปการทำ Workshop 1 - 6 (Workshops Log):** [project_workshops.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/project_workshops.md)
 * **คัมภีร์ข้อมูลเชิงลึกทางเทคนิคและแนวทางตอบคำถามสอบ (Master Technical Reference):** [master_technical_reference.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/master_technical_reference.md)
