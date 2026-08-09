@@ -24,10 +24,17 @@ export default function FlashSalePage() {
     return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16)
   }
 
+  const isoToLocalString = (isoString: string) => {
+    const d = new Date(isoString)
+    if (isNaN(d.getTime())) return ''
+    const tzOffset = d.getTimezoneOffset() * 60000
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16)
+  }
+
   const openEdit = (p: AdminProduct) => {
     setEditing(p)
     setDiscount(p.discount != null ? String(p.discount) : '20')
-    setEndDate(p.flashSaleEnd ? p.flashSaleEnd.slice(0, 16) : getDefaultEndDate())
+    setEndDate(p.flashSaleEnd ? isoToLocalString(p.flashSaleEnd) : getDefaultEndDate())
   }
 
   const activate = async () => {
