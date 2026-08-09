@@ -11,11 +11,13 @@
 
 ### 🔗 เอกสารโครงการ (Project Documentation Links)
 
-* **Repository URL:** `https://github.com/Fouxth/HyperGarage`
-* **เอกสารข้อกำหนดความต้องการซอฟต์แวร์มาตรฐาน IEEE 830 (SRS):** [docs/Software_Requirements_Specification_SRS.md](./docs/Software_Requirements_Specification_SRS.md) / [public/SRS.md](./public/SRS.md)
-* **คัมภีร์ข้อมูลเชิงลึกทางเทคนิคและแนวทางตอบคำถามสอบ (Master Technical Reference):** [docs/master_technical_reference.md](./docs/master_technical_reference.md)
-* **รายงานสรุปการทำ Workshop และลำดับการพัฒนาระบบ (Workshops Log):** [docs/project_workshops.md](./docs/project_workshops.md)
+* **Repository URL:** [https://github.com/Fouxth/HyperGarage](https://github.com/Fouxth/HyperGarage)
 * **หน้าแสดงเอกสาร SRS Interactive บนเว็บ:** [https://fouxth.github.io/HyperGarage/srs.html](https://fouxth.github.io/HyperGarage/srs.html)
+* **เอกสารข้อกำหนดความต้องการซอฟต์แวร์มาตรฐาน IEEE 830 (SRS):** [Software_Requirements_Specification_SRS.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/Software_Requirements_Specification_SRS.md)
+* **รายงานสรุปการทำ Workshop 1 - 6 (Workshops Log):** [project_workshops.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/project_workshops.md)
+* **คัมภีร์ข้อมูลเชิงลึกทางเทคนิคและแนวทางตอบคำถามสอบ (Master Technical Reference):** [master_technical_reference.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/master_technical_reference.md)
+* **คู่มือสรุปซอร์สโค้ดและโครงสร้างระบบสำหรับนำเสนอ:** [project_presentation_guide.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/project_presentation_guide.md)
+* **เอกสารเจาะลึก Logic การทำงานและขั้นตอนระบบ (Deep-Dive Logic):** [detailed_logic_breakdown.md](https://github.com/Fouxth/HyperGarage/blob/main/docs/detailed_logic_breakdown.md)
 
 ---
 
