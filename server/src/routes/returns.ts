@@ -1,9 +1,11 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
+import jwt from 'jsonwebtoken'
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/authMiddleware.js'
 import { requireRole } from '../middlewares/roleMiddleware.js'
 import { logAudit } from '../lib/audit.js'
 import { notify } from '../lib/notify.js'
+import { getJwtSecret } from '../lib/jwtSecret.js'
 
 export const returnsRouter = Router()
 
@@ -27,6 +29,18 @@ function findOne(id: string) {
   return prisma.return.findUnique({ where: { id }, include: { order: true } })
 }
 
+function getAuthIdentity(req: AuthenticatedRequest): { staffId?: string; customerId?: string } {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return {}
+  try {
+    const decoded = jwt.verify(authHeader.split(' ')[1], getJwtSecret()) as { id: string; role?: string }
+    if (decoded.role) return { staffId: decoded.id }
+    return { customerId: decoded.id }
+  } catch {
+    return {}
+  }
+}
+
 returnsRouter.get('/', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']), async (req, res) => {
   const { status } = req.query
   const returns = await prisma.return.findMany({
@@ -38,14 +52,31 @@ returnsRouter.get('/', authMiddleware, requireRole(['SUPERADMIN', 'ORDER_STAFF']
 })
 
 returnsRouter.post('/', async (req, res) => {
-  const { orderId, reason } = req.body as { orderId: string; reason: string }
-  if (!orderId || !reason) return res.status(400).json({ error: 'orderId and reason are required' })
+  const { orderId, reason, phone } = req.body as { orderId: string; reason: string; phone?: string }
+  if (!orderId || !reason || typeof reason !== 'string' || !reason.trim()) {
+    return res.status(400).json({ error: 'orderId and reason are required' })
+  }
 
   const order = await prisma.order.findUnique({ where: { id: orderId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
+  const { staffId, customerId } = getAuthIdentity(req)
+  const isAuthorized =
+    !!staffId ||
+    (!!customerId && order.customerId === customerId) ||
+    (typeof phone === 'string' && phone.trim() === order.phone)
+
+  if (!isAuthorized) {
+    return res.status(403).json({ error: 'Access denied: Valid phone number or account ownership required to request return' })
+  }
+
+  const existingReturn = await prisma.return.findFirst({ where: { orderId } })
+  if (existingReturn) {
+    return res.status(400).json({ error: 'A return request already exists for this order' })
+  }
+
   const created = await prisma.return.create({
-    data: { orderId, reason },
+    data: { orderId, reason: reason.trim() },
     include: { order: true },
   })
   await notify('return_requested', `คำขอคืนสินค้าใหม่สำหรับออเดอร์ ${order.orderNumber}`, created.id)

@@ -5,10 +5,10 @@ import { authMiddleware, AuthenticatedRequest } from '../middlewares/authMiddlew
 import { requireRole } from '../middlewares/roleMiddleware.js'
 import { logAudit } from '../lib/audit.js'
 import { notify } from '../lib/notify.js'
+import { getJwtSecret } from '../lib/jwtSecret.js'
 
 export const ordersRouter = Router()
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hypergarage-secret-key-12345'
 const LOW_STOCK_THRESHOLD = 5
 
 const include = {
@@ -49,8 +49,39 @@ function findOne(id: string) {
   return prisma.order.findUnique({ where: { id }, include })
 }
 
+async function isStaffRequest(req: AuthenticatedRequest): Promise<boolean> {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false
+  try {
+    const decoded = jwt.verify(authHeader.split(' ')[1], getJwtSecret()) as { id: string; role?: string }
+    if (!decoded || !decoded.id || !decoded.role) return false
+    const staff = await prisma.staff.findUnique({ where: { id: decoded.id } })
+    return !!staff
+  } catch {
+    return false
+  }
+}
+
+function getCustomerIdFromHeader(req: AuthenticatedRequest): string | undefined {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return undefined
+  try {
+    const decoded = jwt.verify(authHeader.split(' ')[1], getJwtSecret()) as { id: string; role?: string }
+    return decoded.role ? undefined : decoded.id
+  } catch {
+    return undefined
+  }
+}
+
 ordersRouter.get('/', async (req, res) => {
+  const isStaff = await isStaffRequest(req)
   const { status, phone, orderNumber } = req.query
+
+  // Public unauthenticated queries MUST provide either phone or orderNumber
+  if (!isStaff && typeof phone !== 'string' && typeof orderNumber !== 'string') {
+    return res.status(400).json({ error: 'Phone number or order number is required for guest order lookup' })
+  }
+
   const orders = await prisma.order.findMany({
     where: {
       ...(typeof status === 'string' && status !== 'All' ? { status: status as never } : {}),
@@ -65,21 +96,28 @@ ordersRouter.get('/', async (req, res) => {
 
 ordersRouter.get('/:id', async (req, res) => {
   const order = await findOne(req.params.id)
-  if (!order) return res.status(404).json({ error: 'Not found' })
-  res.json(serialize(order))
-})
+  if (!order) return res.status(404).json({ error: 'Order not found' })
 
-function getCustomerIdFromHeader(req: AuthenticatedRequest): string | undefined {
-  const authHeader = req.headers.authorization
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return undefined
-  try {
-    const decoded = jwt.verify(authHeader.split(' ')[1], JWT_SECRET) as { id: string; role?: string }
-    // Customer tokens carry no `role` claim, unlike staff tokens.
-    return decoded.role ? undefined : decoded.id
-  } catch {
-    return undefined
+  const isStaff = await isStaffRequest(req)
+  if (isStaff) {
+    return res.json(serialize(order))
   }
-}
+
+  const customerId = getCustomerIdFromHeader(req)
+  if (customerId && order.customerId === customerId) {
+    return res.json(serialize(order))
+  }
+
+  const queryPhone = typeof req.query.phone === 'string' ? req.query.phone : undefined
+  const queryOrderNumber = typeof req.query.orderNumber === 'string' ? req.query.orderNumber : undefined
+
+  if ((queryPhone && queryPhone === order.phone) || (queryOrderNumber && queryOrderNumber === order.orderNumber)) {
+    return res.json(serialize(order))
+  }
+
+  // Deny access if no proof of ownership
+  return res.status(403).json({ error: 'Access denied: Proof of order ownership required' })
+})
 
 ordersRouter.post('/', async (req, res) => {
   const b = req.body as {
@@ -90,7 +128,27 @@ ordersRouter.post('/', async (req, res) => {
     items: { productId: string; variantId?: string; quantity: number }[]
   }
 
-  if (!b.items?.length) return res.status(400).json({ error: 'Cart is empty' })
+  if (!b.customer || typeof b.customer !== 'string' || !b.customer.trim()) {
+    return res.status(400).json({ error: 'Customer name is required' })
+  }
+  if (!b.phone || typeof b.phone !== 'string' || !b.phone.trim()) {
+    return res.status(400).json({ error: 'Phone number is required' })
+  }
+  if (!b.shippingAddress || typeof b.shippingAddress !== 'string' || !b.shippingAddress.trim()) {
+    return res.status(400).json({ error: 'Shipping address is required' })
+  }
+  if (!Array.isArray(b.items) || b.items.length === 0 || b.items.length > 50) {
+    return res.status(400).json({ error: 'Cart must contain between 1 and 50 items' })
+  }
+
+  for (const item of b.items) {
+    if (!item.productId || typeof item.productId !== 'string') {
+      return res.status(400).json({ error: 'Invalid product ID' })
+    }
+    if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+      return res.status(400).json({ error: 'Item quantity must be a positive integer between 1 and 99' })
+    }
+  }
 
   const settings = await prisma.storeSettings.upsert({
     where: { id: 'singleton' },
@@ -128,6 +186,9 @@ ordersRouter.post('/', async (req, res) => {
         if (item.variantId) {
           const variant = variantById.get(item.variantId)
           if (!variant) throw new Error(`Variant ${item.variantId} not found`)
+          if (variant.productId !== item.productId) {
+            throw new Error(`Variant ${item.variantId} does not belong to product ${product.name}`)
+          }
           if (variant.stock < item.quantity) throw new Error(`Insufficient stock for ${product.name} (${variant.name})`)
           total += (product.price + variant.priceDelta) * item.quantity
         } else {
@@ -141,9 +202,9 @@ ordersRouter.post('/', async (req, res) => {
       const created = await tx.order.create({
         data: {
           orderNumber,
-          customer: b.customer,
-          phone: b.phone,
-          shippingAddress: b.shippingAddress,
+          customer: b.customer.trim(),
+          phone: b.phone.trim(),
+          shippingAddress: b.shippingAddress.trim(),
           paymentMethod: b.paymentMethod,
           total,
           customerId,

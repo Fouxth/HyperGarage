@@ -94,13 +94,14 @@ async function main() {
   }
 
   // Seed initial SuperAdmin
-  const adminEmail = 'admin@hypergarage.com'
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@hypergarage.com'
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMeSuperAdmin2026!'
   const adminExists = await prisma.staff.findUnique({
     where: { email: adminEmail },
   })
 
   if (!adminExists) {
-    const hashedPassword = await bcrypt.hash('admin1234', 10)
+    const hashedPassword = await bcrypt.hash(adminPassword, 10)
     await prisma.staff.create({
       data: {
         email: adminEmail,
@@ -109,7 +110,7 @@ async function main() {
         role: 'SUPERADMIN',
       },
     })
-    console.log('Seeded default SuperAdmin: admin@hypergarage.com / admin1234')
+    console.log(`Seeded SuperAdmin: ${adminEmail}`)
   }
 
   console.log('Seed complete.')

@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Product, ProductVariant } from '@/types'
 

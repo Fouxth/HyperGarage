@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'hypergarage-secret-key-12345'
+import { getJwtSecret } from '../lib/jwtSecret.js'
 
 export interface AuthenticatedCustomerRequest extends Request {
   customer?: {
@@ -20,7 +19,7 @@ export function customerAuthMiddleware(req: AuthenticatedCustomerRequest, res: R
 
   const token = authHeader.split(' ')[1]
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string; role?: string }
+    const decoded = jwt.verify(token, getJwtSecret()) as { id: string; email: string; name: string; role?: string }
     if (decoded.role) {
       // Staff tokens carry a `role` claim; reject them here so a staff
       // login can never be reused to authenticate as a customer.

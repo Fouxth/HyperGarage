@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, Package, User } from 'lucide-react'
 import { useOrders } from '@/api/hooks'
-import { formatPrice } from '@/components/shared/ProductCard'
+import { formatPrice } from '@/lib/formatters'
 
 const statusColor: Record<string, string> = {
   pending: 'text-warning',

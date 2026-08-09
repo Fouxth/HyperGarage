@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Search, PackageSearch, Clock, PackageCheck, Truck, CheckCircle2, XCircle } from 'lucide-react'
 import { useOrders } from '@/api/hooks'
 import { getRememberedOrderIds } from '@/lib/recentOrders'
-import { formatPrice } from '@/components/shared/ProductCard'
+import { formatPrice } from '@/lib/formatters'
 import type { Order } from '@/types'
 
 const flow: Order['status'][] = ['pending', 'processing', 'shipped', 'delivered']

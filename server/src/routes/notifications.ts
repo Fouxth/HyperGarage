@@ -1,10 +1,12 @@
 import { Router } from 'express'
 import { prisma } from '../prisma.js'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const notificationsRouter = Router()
 
 notificationsRouter.use(authMiddleware)
+notificationsRouter.use(requireRole(['SUPERADMIN', 'STOCK_STAFF', 'ORDER_STAFF']))
 
 notificationsRouter.get('/', async (req, res) => {
   const { read } = req.query

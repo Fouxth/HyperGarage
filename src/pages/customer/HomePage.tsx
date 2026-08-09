@@ -189,19 +189,19 @@ const CompatibilityChecker = () => {
   const modelList = useMemo(() => {
     const v = vehicles.find((v) => v.brand === selectedBrand)
     return v ? v.models.map((m) => m.name) : []
-  }, [selectedBrand])
+  }, [selectedBrand, vehicles])
 
   const genList = useMemo(() => {
     const v = vehicles.find((v) => v.brand === selectedBrand)
     const m = v?.models.find((m) => m.name === selectedModel)
     return m ? m.generations.map((g) => g.name) : []
-  }, [selectedBrand, selectedModel])
+  }, [selectedBrand, selectedModel, vehicles])
 
   const selectedGenData = useMemo(() => {
     const v = vehicles.find((v) => v.brand === selectedBrand)
     const m = v?.models.find((m) => m.name === selectedModel)
     return m?.generations.find((g) => g.name === selectedGen)
-  }, [selectedBrand, selectedModel, selectedGen])
+  }, [selectedBrand, selectedModel, selectedGen, vehicles])
 
   const yearList = useMemo(() => {
     if (!selectedGenData) return []

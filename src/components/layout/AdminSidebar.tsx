@@ -108,7 +108,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
     if (rawUser) {
       try {
         setUser(JSON.parse(rawUser));
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -129,7 +129,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   // Close mobile sidebar on route change
   useEffect(() => {
     onClose();
-  }, [location.pathname]);
+  }, [location.pathname, onClose]);
 
   const sidebarContent = (
     <div className="flex flex-col h-full">

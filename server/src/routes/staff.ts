@@ -25,7 +25,7 @@ staffRouter.get('/', async (req, res) => {
       },
     })
     res.json(staffList)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to retrieve staff list' })
   }
 })
@@ -69,7 +69,7 @@ staffRouter.post('/', async (req, res) => {
     })
 
     res.status(201).json(newStaff)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to create staff account' })
   }
 })
@@ -120,7 +120,7 @@ staffRouter.patch('/:id', async (req, res) => {
     })
 
     res.json(updated)
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to update staff account' })
   }
 })
@@ -143,7 +143,7 @@ staffRouter.delete('/:id', async (req: AuthenticatedRequest, res) => {
 
     await prisma.staff.delete({ where: { id } })
     res.json({ message: 'Staff account deleted successfully' })
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete staff account' })
   }
 })

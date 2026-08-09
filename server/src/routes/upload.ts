@@ -3,6 +3,7 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { requireRole } from '../middlewares/roleMiddleware.js'
 
 export const uploadRouter = Router()
 
@@ -13,17 +14,17 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, uploadDir)
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
     const ext = path.extname(file.originalname)
     cb(null, 'file-' + uniqueSuffix + ext)
   },
 })
 
-const fileFilter = (req: any, file: any, cb: any) => {
+const fileFilter = (_req: any, file: any, cb: any) => {
   const allowedTypes = /jpeg|jpg|png|webp|gif/
   const mimeType = allowedTypes.test(file.mimetype)
   const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase())
@@ -40,16 +41,13 @@ const upload = multer({
   fileFilter,
 })
 
-// POST /api/upload - Upload an image (requires authentication)
-// Anyone logged in as staff can upload images for products or reviews
-uploadRouter.post('/', authMiddleware, upload.single('image'), (req: any, res) => {
+// POST /api/upload - Upload an image (requires staff authentication)
+uploadRouter.post('/', authMiddleware, requireRole(['SUPERADMIN', 'STOCK_STAFF', 'ORDER_STAFF']), upload.single('image'), (req: any, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'Please upload an image file' })
     return
   }
 
-  // Generate URL to access this image
-  // Note: we can use a relative URL like `/uploads/filename` which resolves correctly under Vite proxy or domain root
   const imageUrl = `/uploads/${req.file.filename}`
 
   res.status(201).json({

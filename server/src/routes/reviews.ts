@@ -25,10 +25,25 @@ reviewsRouter.get('/', async (req, res) => {
 
 reviewsRouter.post('/', async (req, res) => {
   const { productId, userName, rating, comment, images } = req.body
-  if (!productId || !userName || !rating || !comment) {
-    res.status(400).json({ error: 'productId, userName, rating, and comment are required' })
-    return
+  if (!productId || typeof productId !== 'string') {
+    return res.status(400).json({ error: 'Valid productId is required' })
   }
+  if (!userName || typeof userName !== 'string' || !userName.trim() || userName.length > 50) {
+    return res.status(400).json({ error: 'userName is required and must be under 50 characters' })
+  }
+
+  const numRating = Number(rating)
+  if (!Number.isInteger(numRating) || numRating < 1 || numRating > 5) {
+    return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' })
+  }
+
+  if (!comment || typeof comment !== 'string' || !comment.trim() || comment.length > 1000) {
+    return res.status(400).json({ error: 'Comment is required and must be under 1000 characters' })
+  }
+
+  const validImages = Array.isArray(images)
+    ? images.filter((img): img is string => typeof img === 'string' && img.length < 500).slice(0, 5)
+    : []
 
   try {
     const productExists = await prisma.product.findUnique({
@@ -41,7 +56,13 @@ reviewsRouter.post('/', async (req, res) => {
 
     const review = await prisma.$transaction(async (tx) => {
       const created = await tx.review.create({
-        data: { productId, userName, rating: Number(rating), comment, images: images ?? [] },
+        data: {
+          productId,
+          userName: userName.trim(),
+          rating: numRating,
+          comment: comment.trim(),
+          images: validImages,
+        },
       })
       const agg = await tx.review.aggregate({
         where: { productId },
@@ -55,7 +76,7 @@ reviewsRouter.post('/', async (req, res) => {
       return created
     })
 
-    await notify('new_review', `รีวิวใหม่ ${rating} ดาว จาก ${userName}`, review.productId)
+    await notify('new_review', `รีวิวใหม่ ${numRating} ดาว จาก ${review.userName}`, review.productId)
 
     res.status(201).json({
       id: review.id,

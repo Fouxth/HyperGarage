@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'hypergarage-secret-key-12345'
+import { getJwtSecret } from '../lib/jwtSecret.js'
+import { prisma } from '../prisma.js'
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -12,7 +12,7 @@ export interface AuthenticatedRequest extends Request {
   }
 }
 
-export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized: Missing token' })
@@ -21,10 +21,26 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
 
   const token = authHeader.split(' ')[1]
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as NonNullable<AuthenticatedRequest['user']>
-    req.user = decoded
+    const decoded = jwt.verify(token, getJwtSecret()) as { id: string; role?: string }
+    if (!decoded || !decoded.id || !decoded.role) {
+      res.status(401).json({ error: 'Unauthorized: Staff authentication required' })
+      return
+    }
+
+    const staff = await prisma.staff.findUnique({ where: { id: decoded.id } })
+    if (!staff) {
+      res.status(401).json({ error: 'Unauthorized: Staff account no longer exists' })
+      return
+    }
+
+    req.user = {
+      id: staff.id,
+      email: staff.email,
+      name: staff.name,
+      role: staff.role,
+    }
     next()
-  } catch (err) {
+  } catch {
     res.status(401).json({ error: 'Unauthorized: Invalid or expired token' })
   }
 }

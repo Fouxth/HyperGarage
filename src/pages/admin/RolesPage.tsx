@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Plus, Edit3, Trash2, X, Key } from 'lucide-react'
 
@@ -34,19 +34,7 @@ export default function RolesPage() {
   const API_BASE = import.meta.env.VITE_API_URL || '/api'
   const token = localStorage.getItem('hypergarage_admin_token')
 
-  useEffect(() => {
-    const rawUser = localStorage.getItem('hypergarage_admin_user')
-    if (rawUser) {
-      try {
-        setCurrentUser(JSON.parse(rawUser))
-      } catch (e) {
-        // ignore
-      }
-    }
-    fetchStaff()
-  }, [])
-
-  const fetchStaff = async () => {
+  const fetchStaff = useCallback(async () => {
     setIsLoading(true)
     try {
       const res = await fetch(`${API_BASE}/staff`, {
@@ -58,12 +46,24 @@ export default function RolesPage() {
       if (!res.ok) throw new Error()
       const data = await res.json()
       setStaffList(data)
-    } catch (err) {
+    } catch {
       console.error('Failed to load staff list')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [API_BASE, token])
+
+  useEffect(() => {
+    const rawUser = localStorage.getItem('hypergarage_admin_user')
+    if (rawUser) {
+      try {
+        setCurrentUser(JSON.parse(rawUser))
+      } catch {
+        // ignore
+      }
+    }
+    fetchStaff()
+  }, [fetchStaff])
 
   const openCreate = () => {
     setEditingId(null)

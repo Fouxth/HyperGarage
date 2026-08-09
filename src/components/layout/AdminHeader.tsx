@@ -49,7 +49,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
     if (rawUser) {
       try {
         setUser(JSON.parse(rawUser));
-      } catch (e) {
+      } catch {
         // ignore
       }
     }

@@ -3,19 +3,12 @@ import { prisma } from '../prisma.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { customerAuthMiddleware, AuthenticatedCustomerRequest } from '../middlewares/customerAuthMiddleware.js'
+import { getJwtSecret } from '../lib/jwtSecret.js'
 
 export const accountRouter = Router()
-const JWT_SECRET = process.env.JWT_SECRET || 'hypergarage-secret-key-12345'
 
 function serializeCustomer(c: { id: string; email: string; name: string; phone: string | null }) {
   return { id: c.id, email: c.email, name: c.name, phone: c.phone ?? undefined }
-}
-
-// Attaches any past guest-checkout orders placed with the same phone number
-// to this customer account, so they retroactively show up as "my orders".
-async function claimOrdersByPhone(customerId: string, phone: string | null) {
-  if (!phone) return
-  await prisma.order.updateMany({ where: { phone, customerId: null }, data: { customerId } })
 }
 
 accountRouter.post('/register', async (req, res) => {
@@ -29,9 +22,8 @@ accountRouter.post('/register', async (req, res) => {
 
   const hashed = await bcrypt.hash(password, 10)
   const customer = await prisma.customer.create({ data: { email, password: hashed, name, phone } })
-  await claimOrdersByPhone(customer.id, customer.phone)
 
-  const token = jwt.sign({ id: customer.id, email: customer.email, name: customer.name }, JWT_SECRET, { expiresIn: '30d' })
+  const token = jwt.sign({ id: customer.id, email: customer.email, name: customer.name }, getJwtSecret(), { expiresIn: '30d' })
   res.status(201).json({ token, customer: serializeCustomer(customer) })
 })
 
@@ -46,9 +38,7 @@ accountRouter.post('/login', async (req, res) => {
   const valid = await bcrypt.compare(password, customer.password)
   if (!valid) return res.status(401).json({ error: 'Invalid email or password' })
 
-  await claimOrdersByPhone(customer.id, customer.phone)
-
-  const token = jwt.sign({ id: customer.id, email: customer.email, name: customer.name }, JWT_SECRET, { expiresIn: '30d' })
+  const token = jwt.sign({ id: customer.id, email: customer.email, name: customer.name }, getJwtSecret(), { expiresIn: '30d' })
   res.json({ token, customer: serializeCustomer(customer) })
 })
 

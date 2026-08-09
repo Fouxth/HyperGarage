@@ -4,8 +4,7 @@ import type { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
 import { localizedName } from '@/lib/localize'
-
-export const formatPrice = (price: number) => `฿${price.toLocaleString()}`
+import { formatPrice } from '@/lib/formatters'
 
 export default function ProductCard({ product }: { product: Product }) {
   const { t, i18n } = useTranslation()

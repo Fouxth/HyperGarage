@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Package, Landmark, QrCode } from 'lucide-react'
 import { useOrder, useSettings } from '@/api/hooks'
-import { formatPrice } from '@/components/shared/ProductCard'
+import { formatPrice } from '@/lib/formatters'
 import { promptPayQrDataUrl } from '@/lib/promptpay'
 import { getCustomerToken } from '@/api/customerClient'
 

@@ -3,9 +3,9 @@ import { prisma } from '../prisma.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/authMiddleware.js'
+import { getJwtSecret } from '../lib/jwtSecret.js'
 
 export const authRouter = Router()
-const JWT_SECRET = process.env.JWT_SECRET || 'hypergarage-secret-key-12345'
 
 authRouter.post('/login', async (req, res) => {
   const { email, password } = req.body
@@ -37,7 +37,7 @@ authRouter.post('/login', async (req, res) => {
         name: staff.name,
         role: staff.role,
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     )
 
@@ -50,7 +50,7 @@ authRouter.post('/login', async (req, res) => {
         role: staff.role,
       },
     })
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Login failed' })
   }
 })

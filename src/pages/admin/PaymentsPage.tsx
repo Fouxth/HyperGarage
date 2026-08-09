@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { CreditCard, Save, Landmark, Truck, QrCode, CheckCircle2, RotateCcw, Check } from 'lucide-react'
 import { useOrders, useSettings, useUpdateSettings, useUpdatePaymentStatus } from '@/api/hooks'
 import { THAI_BANKS, bankInitials } from '@/lib/banks'
-import BankBadge from '@/components/shared/BankBadge'
 
 const emptyForm = {
   codEnabled: true,
