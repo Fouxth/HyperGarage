@@ -12,8 +12,9 @@
 ### 🔗 เอกสารโครงการ (Project Documentation Links)
 
 * **Repository URL:** `https://github.com/Fouxth/HyperGarage`
-* **เอกสารข้อกำหนดระบบเชิงลึก (SRS Markdown):** [public/SRS.md](./public/SRS.md)
-* **หน้าแสดงเอกสาร SRS (Live Document):** `/srs.html` — เปิดผ่านแอปหลังรันเซิร์ฟเวอร์ (เช่น `http://localhost:5173/srs.html`) ไม่ได้โฮสต์แยกผ่าน GitHub Pages เนื่องจากโปรเจกต์นี้ต้องมีฐานข้อมูล/แบ็กเอนด์จริงทำงานอยู่เบื้องหลัง ไม่ใช่เอกสารสถิตล้วนแบบ ComHub
+* **เอกสารข้อกำหนดความต้องการซอฟต์แวร์มาตรฐาน IEEE 830 (SRS):** [docs/Software_Requirements_Specification_SRS.md](./docs/Software_Requirements_Specification_SRS.md) / [public/SRS.md](./public/SRS.md)
+* **คัมภีร์ข้อมูลเชิงลึกทางเทคนิคและแนวทางตอบคำถามสอบ (Master Technical Reference):** [docs/master_technical_reference.md](./docs/master_technical_reference.md)
+* **หน้าแสดงเอกสาร SRS Interactive บนเว็บ:** [http://localhost:5173/srs.html](http://localhost:5173/srs.html) — เปิดผ่านแอปหลังรันเซิร์ฟเวอร์ (`npm run dev`)
 
 ---
 
