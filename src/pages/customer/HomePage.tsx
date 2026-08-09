@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
@@ -22,21 +22,25 @@ import { localizedName } from '@/lib/localize'
 // ---------------------------------------------------------------------------
 
 const useCountdown = (targetDate: Date) => {
-  const calc = () => {
-    const diff = Math.max(0, targetDate.getTime() - Date.now())
+  const targetTime = targetDate.getTime()
+  const calc = useCallback(() => {
+    const diff = Math.max(0, targetTime - Date.now())
     return {
       days: Math.floor(diff / (1000 * 60 * 60 * 24)),
       hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((diff / (1000 * 60)) % 60),
       seconds: Math.floor((diff / 1000) % 60),
     }
-  }
+  }, [targetTime])
+
   const [time, setTime] = useState(calc)
+
   useEffect(() => {
-    const id = setInterval(() => setTime(calc), 1000)
+    setTime(calc())
+    const id = setInterval(() => setTime(calc()), 1000)
     return () => clearInterval(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [calc])
+
   return time
 }
 
@@ -470,13 +474,20 @@ const FlashSale = () => {
   const { t } = useTranslation()
   const { data: flashProducts = [] } = useProducts({ flashSale: true })
 
-  // countdown to a future date (7 days from now, keeps ticking)
   const target = useMemo(() => {
+    const validEnds = flashProducts
+      .map((p) => (p.flashSaleEnd ? new Date(p.flashSaleEnd).getTime() : 0))
+      .filter((t) => t > Date.now())
+
+    if (validEnds.length > 0) {
+      return new Date(Math.min(...validEnds))
+    }
+
     const d = new Date()
     d.setDate(d.getDate() + 3)
     d.setHours(23, 59, 59, 0)
     return d
-  }, [])
+  }, [flashProducts])
 
   const countdown = useCountdown(target)
 
