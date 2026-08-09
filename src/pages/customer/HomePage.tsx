@@ -475,12 +475,17 @@ const FlashSale = () => {
   const { data: flashProducts = [] } = useProducts({ flashSale: true })
 
   const target = useMemo(() => {
-    const validEnds = flashProducts
+    const dates = flashProducts
       .map((p) => (p.flashSaleEnd ? new Date(p.flashSaleEnd).getTime() : 0))
-      .filter((t) => t > Date.now())
+      .filter((t) => !isNaN(t) && t > 0)
 
-    if (validEnds.length > 0) {
-      return new Date(Math.min(...validEnds))
+    if (dates.length > 0) {
+      const futureDates = dates.filter((t) => t > Date.now())
+      if (futureDates.length > 0) {
+        return new Date(Math.min(...futureDates))
+      }
+      // If all configured flash sale end dates are in the past, return the latest configured date (so countdown shows 00:00:00:00)
+      return new Date(Math.max(...dates))
     }
 
     const d = new Date()

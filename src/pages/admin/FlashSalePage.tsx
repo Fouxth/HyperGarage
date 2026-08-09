@@ -16,10 +16,18 @@ export default function FlashSalePage() {
   const active = products.filter((p) => p.isFlashSale)
   const inactive = products.filter((p) => !p.isFlashSale)
 
+  const getDefaultEndDate = () => {
+    const d = new Date()
+    d.setDate(d.getDate() + 7)
+    d.setHours(23, 59, 0, 0)
+    const tzOffset = d.getTimezoneOffset() * 60000
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16)
+  }
+
   const openEdit = (p: AdminProduct) => {
     setEditing(p)
     setDiscount(p.discount != null ? String(p.discount) : '20')
-    setEndDate(p.flashSaleEnd ? p.flashSaleEnd.slice(0, 16) : '')
+    setEndDate(p.flashSaleEnd ? p.flashSaleEnd.slice(0, 16) : getDefaultEndDate())
   }
 
   const activate = async () => {
